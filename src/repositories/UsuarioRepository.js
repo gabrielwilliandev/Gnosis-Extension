@@ -1,5 +1,6 @@
 const supabase = require('../config/supabase');
-// salva o usuario na autenticacao e no banco
+const AppError = require('../errors/AppError');
+
 class UsuarioRepository {
     static async salvar(usuarioEntity) {
         let authUserId = null;
@@ -12,7 +13,6 @@ class UsuarioRepository {
 
             if (authError) throw authError;
 
-            // Guardamos o ID para caso precisemos deletar depois
             authUserId = authData.user.id;
 
             const { data, error: profileError } = await supabase
@@ -31,43 +31,50 @@ class UsuarioRepository {
             if (profileError) throw profileError;
 
             return data;
-
         } catch (error) {
-            // SE ALGO FALHOU E O USUÁRIO JÁ TINHA SIDO CRIADO NO AUTH:
             if (authUserId) {
                 await supabase.auth.admin.deleteUser(authUserId);
             }
 
-            throw new Error(`Erro no processo de cadastro: ${error.message}`);
+            throw new AppError(`Erro no processo de cadastro: ${error.message}`, 400, 'USER_REGISTRATION_ERROR');
         }
     }
-    static async login(email, senha){
-        try{
-            const {data: authData, error: authError} = await supabase.auth.signInWithPassword({
+
+    static async login(email, senha) {
+        try {
+            const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
                 email: email,
                 password: senha
             });
 
-            if(authError) throw new Error("Credenciais inválidas!");
+            if (authError) {
+                throw new AppError('Credenciais invalidas', 401, 'AUTH_INVALID_CREDENTIALS');
+            }
 
-            const { data: profileData, error: profileError} = await supabase
-            .from('usuarios')
-            .select('nome')
-            .eq('id', authData.user.id)
-            .single();
+            const { data: profileData, error: profileError } = await supabase
+                .from('usuarios')
+                .select('nome')
+                .eq('id', authData.user.id)
+                .single();
 
-            if (profileError) console.warn("Aviso: Não foi possível localizar o perfil!");
+            if (profileError) {
+                console.warn('Aviso: Nao foi possivel localizar o perfil!');
+            }
 
-            return{
+            return {
                 token: authData.session.access_token,
-                usuario:{
-                    nome: profileData ? profileData.nome : "Estudante"
+                usuario: {
+                    id: authData.user.id,
+                    nome: profileData ? profileData.nome : 'Estudante'
                 }
             };
-            
-        } catch (error){
-            console.error("Erro detalhado do Supabase Auth:", error.message || error);
-            throw new Error("Credenciais inválidas");
+        } catch (error) {
+            if (error instanceof AppError) {
+                throw error;
+            }
+
+            console.error('Erro detalhado do Supabase Auth:', error.message || error);
+            throw new AppError('Credenciais invalidas', 401, 'AUTH_INVALID_CREDENTIALS');
         }
     }
 }

@@ -1,31 +1,38 @@
 const supabase = require('../config/supabase');
-// salva a materia no banco
-class MateriaRepository{
-    static async salvar(materiaEntity){
-        const {data, error} = await supabase
-        .from('materias')
-        .insert([
-            {
-                nome: materiaEntity.nome,
-                user_id: materiaEntity.idUsuario
-            }
-        ])
-        .select()
-        .single();
+const AppError = require('../errors/AppError');
 
-        if(error) throw new Error(`Erro ao salvar matéria: ${error.message}`);
+class MateriaRepository {
+    static async salvar(materiaEntity) {
+        const { data, error } = await supabase
+            .from('materias')
+            .insert([
+                {
+                    nome: materiaEntity.nome,
+                    user_id: materiaEntity.idUsuario
+                }
+            ])
+            .select()
+            .single();
+
+        if (error) {
+            throw new AppError(`Erro ao salvar materia: ${error.message}`, 400, 'SUBJECT_CREATE_ERROR');
+        }
+
         return data;
     }
 
     static async buscarPorUsuario(userId) {
-    const { data, error } = await supabase
-      .from('materias')
-      .select('*')
-      .eq('user_id', userId);
+        const { data, error } = await supabase
+            .from('materias')
+            .select('*')
+            .eq('user_id', userId);
 
-    if (error) throw new Error(error.message);
-    return data;
-  }
+        if (error) {
+            throw new AppError(error.message, 400, 'SUBJECT_FETCH_ERROR');
+        }
+
+        return data;
+    }
 }
 
 module.exports = MateriaRepository;

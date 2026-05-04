@@ -1,18 +1,12 @@
 const API_BASE_URL = 'http://localhost:3000/api';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Referências DOM - Tela Login
     const viewLogin = document.getElementById('view-login');
     const inputEmail = document.getElementById('email');
     const inputSenha = document.getElementById('senha');
     const btnConectar = document.getElementById('btnConectar');
-<<<<<<< HEAD
-=======
     const btnCadastrar = document.getElementById('btnCadastrar');
-    
->>>>>>> bc5fa7e (feat: integracao da logo na extensao e animacao lottie no login web)
 
-    // Referências DOM - Tela Tarefas
     const viewTarefas = document.getElementById('view-tarefas');
     const btnSair = document.getElementById('btnSair');
     const btnAtualizar = document.getElementById('btnAtualizar');
@@ -21,7 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const todayText = document.getElementById('todayText');
     const tabs = document.querySelectorAll('.nav-tabs-custom .nav-link');
 
-    // Estado da tela
     let tarefasCache = [];
     let filtroAtual = 'todas';
     let termoBusca = '';
@@ -32,12 +25,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function init() {
         chrome.storage.local.get(['gnosis_token', 'gnosis_user'], (resultado) => {
-            if (resultado.gnosis_token) {
-                mostrarTelaTarefas(resultado.gnosis_user || 'Estudante');
-                buscarTarefas(resultado.gnosis_token);
-            } else {
-                mostrarTelaLogin();
+            const usuario = resultado.gnosis_user;
+
+            if (resultado.gnosis_token && usuario?.id) {
+                mostrarTelaTarefas(usuario);
+                buscarTarefas(usuario.id);
+                return;
             }
+
+            mostrarTelaLogin();
         });
     }
 
@@ -46,15 +42,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const dia = hoje.getDate();
         const mes = hoje.toLocaleDateString('pt-BR', { month: 'short' })
             .replace('.', '')
-            .replace(/^./, letra => letra.toUpperCase());
+            .replace(/^./, (letra) => letra.toUpperCase());
 
         todayText.textContent = `Hoje, ${dia.toString().padStart(2, '0')} ${mes}`;
     }
 
     function configurarEventosFiltro() {
-        tabs.forEach(tab => {
+        tabs.forEach((tab) => {
             tab.addEventListener('click', () => {
-                tabs.forEach(t => t.classList.remove('active'));
+                tabs.forEach((t) => t.classList.remove('active'));
                 tab.classList.add('active');
                 filtroAtual = tab.dataset.filter;
                 renderizarTarefas();
@@ -71,9 +67,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const email = inputEmail.value.trim();
         const senha = inputSenha.value.trim();
 
-        if (!email || !senha) return;
+        if (!email || !senha) {
+            alert('Preencha e-mail e senha para continuar.');
+            return;
+        }
 
-        btnConectar.innerHTML = "Conectando...";
+        btnConectar.innerHTML = 'Conectando...';
         btnConectar.disabled = true;
 
         try {
@@ -83,42 +82,48 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ email, senha })
             });
 
-            if (!response.ok) throw new Error("Credenciais inválidas");
+            const payload = await response.json();
 
-            const data = await response.json();
+            if (!response.ok || !payload.success) {
+                throw new Error(payload.message || 'Credenciais invalidas');
+            }
 
-            const token = data.token;
-            const usuarioNome = data.usuario?.nome || "Estudante";
+            const token = payload.data?.token;
+            const usuario = payload.data?.usuario;
+
+            if (!token || !usuario?.id) {
+                throw new Error('Resposta de login incompleta.');
+            }
 
             chrome.storage.local.set({
-                'gnosis_token': token,
-                'gnosis_user': usuarioNome
+                gnosis_token: token,
+                gnosis_user: usuario
             }, () => {
-                chrome.runtime.sendMessage({ acao: "INICIAR_MONITORAMENTO", token: token });
-                mostrarTelaTarefas(usuarioNome);
-                buscarTarefas(token);
-            });
+                chrome.runtime.sendMessage({
+                    acao: 'INICIAR_MONITORAMENTO',
+                    token,
+                    userId: usuario.id
+                });
 
+                mostrarTelaTarefas(usuario);
+                buscarTarefas(usuario.id);
+            });
         } catch (error) {
-            alert("Erro ao conectar. Verifique as credenciais ou se a API está rodando.");
+            alert(error.message || 'Erro ao conectar. Verifique a API e suas credenciais.');
         } finally {
-            btnConectar.innerHTML = "Conectar";
+            btnConectar.innerHTML = 'Conectar';
             btnConectar.disabled = false;
         }
     });
 
-<<<<<<< HEAD
-=======
     btnCadastrar.addEventListener('click', (e) => {
         e.preventDefault();
-        
-        chrome.tabs.create({ url: "http://localhost:8080/cadastro" });
+        chrome.tabs.create({ url: 'http://localhost:8080/cadastro' });
     });
 
->>>>>>> bc5fa7e (feat: integracao da logo na extensao e animacao lottie no login web)
     btnSair.addEventListener('click', () => {
-        chrome.storage.local.remove(['gnosis_token', 'gnosis_user'], () => {
-            chrome.runtime.sendMessage({ acao: "PARAR_MONITORAMENTO" });
+        chrome.storage.local.remove(['gnosis_token', 'gnosis_user', 'tarefas_notificadas'], () => {
+            chrome.runtime.sendMessage({ acao: 'PARAR_MONITORAMENTO' });
             inputEmail.value = '';
             inputSenha.value = '';
             tarefasCache = [];
@@ -126,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
             termoBusca = '';
             searchInput.value = '';
 
-            tabs.forEach(t => t.classList.remove('active'));
+            tabs.forEach((t) => t.classList.remove('active'));
             tabs[0].classList.add('active');
 
             mostrarTelaLogin();
@@ -134,8 +139,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     btnAtualizar.addEventListener('click', () => {
-        chrome.storage.local.get(['gnosis_token'], (resultado) => {
-            if (resultado.gnosis_token) buscarTarefas(resultado.gnosis_token);
+        chrome.storage.local.get(['gnosis_user'], (resultado) => {
+            const userId = resultado.gnosis_user?.id;
+            if (userId) {
+                buscarTarefas(userId);
+            }
         });
     });
 
@@ -144,15 +152,16 @@ document.addEventListener('DOMContentLoaded', () => {
         viewLogin.classList.remove('d-none');
     }
 
-    function mostrarTelaTarefas(nomeUsuario) {
+    function mostrarTelaTarefas(usuario) {
         viewLogin.classList.add('d-none');
         viewTarefas.classList.remove('d-none');
 
+        const nomeUsuario = usuario?.nome || 'Estudante';
         document.getElementById('userName').innerText = nomeUsuario;
         document.getElementById('userInitials').innerText = nomeUsuario.substring(0, 2).toUpperCase();
     }
 
-    async function buscarTarefas(token) {
+    async function buscarTarefas(userId) {
         taskListContainer.innerHTML = `
             <div class="text-center mt-5 text-muted small d-flex align-items-center justify-content-center" id="loadingTasks">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-stars me-2" viewBox="0 0 16 16">
@@ -162,24 +171,19 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>`;
 
         try {
-            const response = await fetch(`${API_BASE_URL}/tarefas`, {
-                method: 'GET',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const response = await fetch(`${API_BASE_URL}/tarefas/usuario/${encodeURIComponent(userId)}`);
+            const payload = await response.json();
 
-            if (!response.ok) {
-                if (response.status === 401) btnSair.click();
-                throw new Error("Erro ao buscar tarefas");
+            if (!response.ok || !payload.success) {
+                throw new Error(payload.message || 'Erro ao buscar tarefas');
             }
 
-            const tarefas = await response.json();
-            tarefasCache = Array.isArray(tarefas) ? tarefas : [];
+            tarefasCache = Array.isArray(payload.data) ? payload.data : [];
             renderizarTarefas();
-
         } catch (error) {
             taskListContainer.innerHTML = `
                 <div class="text-center mt-4 text-danger small">
-                    Falha ao carregar a constelação.<br>O servidor está online?
+                    Falha ao carregar a constelacao.<br>${error.message || 'Verifique se a API esta online.'}
                 </div>`;
         }
     }
@@ -202,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function statusTexto(statusNormalizado) {
         if (statusNormalizado === 'feita') return 'Feito';
-        if (statusNormalizado === 'nao-feita') return 'Não Feito';
+        if (statusNormalizado === 'nao-feita') return 'Nao Feito';
         return 'Pendente';
     }
 
@@ -234,7 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function aplicarFiltros(lista) {
-        return lista.filter(t => {
+        return lista.filter((t) => {
             const statusNormalizado = normalizarStatus(t.status);
 
             const passaFiltro =
@@ -247,7 +251,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!termoBusca) return true;
 
+            const materiaTexto = Array.isArray(t.materias)
+                ? t.materias.map((materia) => materia?.nome).filter(Boolean).join(' ')
+                : '';
+
             const texto = [
+                materiaTexto,
                 t.disciplina,
                 t.titulo,
                 t.descricao,
@@ -268,6 +277,14 @@ document.addEventListener('DOMContentLoaded', () => {
         return d.toLocaleDateString('pt-BR');
     }
 
+    function obterDisciplina(tarefa) {
+        if (Array.isArray(tarefa.materias) && tarefa.materias.length > 0) {
+            return tarefa.materias.map((materia) => materia.nome).filter(Boolean).join(', ');
+        }
+
+        return tarefa.disciplina || 'Geral';
+    }
+
     function renderizarTarefas() {
         const tarefasFiltradas = aplicarFiltros(tarefasCache);
 
@@ -286,11 +303,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         taskListContainer.innerHTML = '';
 
-        tarefasFiltradas.forEach(t => {
+        tarefasFiltradas.forEach((t) => {
             const statusNormalizado = normalizarStatus(t.status);
-            const dataFormatada = formatarData(t.data_entrega || t.dataEntrega || t.data);
-            const disciplina = t.disciplina || 'Geral';
-            const titulo = t.titulo || t.nome || 'Sem título';
+            const dataFormatada = formatarData(t.data_vencimento || t.data_entrega || t.dataEntrega || t.data);
+            const disciplina = obterDisciplina(t);
+            const titulo = t.titulo || t.nome || 'Sem titulo';
 
             const cardHTML = `
                 <div class="task-card ${statusNormalizado}">
@@ -309,13 +326,11 @@ document.addEventListener('DOMContentLoaded', () => {
                                       <path d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5z"/>
                                       <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
                                     </svg>
-                                    ${dataFormatada}
+                                    ${dataFormatada || 'Sem data'}
                                 </span>
                             </p>
 
-                            <h6 class="task-title">
-                                ${titulo}
-                            </h6>
+                            <h6 class="task-title">${titulo}</h6>
                         </div>
 
                         <div class="status-badge ${statusBadgeClass(statusNormalizado)}">

@@ -1,23 +1,15 @@
-const { success, error } = require('../utils/response.js');
-const NotificacaoService = require('../services/NotificacaoService.js');
+const { success } = require('../utils/response.js');
+const NotificacaoService = require('../service/NotificacaoService.js');
+const asyncHandler = require('../middlewares/asyncHandler');
 
 class NotificacaoController {
-    static async criar(req, res) {
-        try {
-            const notificacaoSalva = await NotificacaoService.criar(req.body);
+    static criar = asyncHandler(async (req, res) => {
+        const notificacaoSalva = await NotificacaoService.criar(req.body);
 
-            return res.status(201).json(
-                success(notificacaoSalva, "Notificação agendada com sucesso!")
-            );
-
-        } catch (err) {
-            console.error("Erro ao criar notificação:", err.message);
-
-            return res.status(400).json(
-                error(err.message)
-            );
-        }
-    }
+        return res.status(201).json(
+            success(notificacaoSalva, 'Notificacao agendada com sucesso!')
+        );
+    });
 }
 
 module.exports = NotificacaoController;

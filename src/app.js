@@ -4,6 +4,8 @@ const cors = require('cors')
 
 const usuarioRoutes = require('./routes/usuarioRoutes');
 const tarefaRoutes = require('./routes/tarefaRoutes')
+const materiaRoutes = require('./routes/materiaRoutes');
+const errorHandler = require('./middlewares/errorHandler');
 const app = express();
 
 app.use(cors());
@@ -14,6 +16,7 @@ app.use(express.json());
 app.use(express.static("public"));
 
 app.use('/api/tarefas', tarefaRoutes)
+app.use('/api/materias', materiaRoutes);
 
 app.use('/api', usuarioRoutes);
 
@@ -22,6 +25,7 @@ app.get('/api/health', (req, res) => {
     res.status(200).json({ status: 'Servidor no ar!' });
 });
 
+app.use(errorHandler);
 
 const PORT = 3000; 
 app.listen(PORT, () => {

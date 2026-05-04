@@ -1,47 +1,30 @@
-const { success, error } = require('../utils/response.js');
+const { success } = require('../utils/response.js');
 const MateriaService = require('../service/MateriaService.js');
+const asyncHandler = require('../middlewares/asyncHandler');
 
-class MateriaController{
-    static async cadastrar(req, res){
-        try{
-            const materiaSalva = await MateriaService.cadastrar(req.body);
+class MateriaController {
+    static cadastrar = asyncHandler(async (req, res) => {
+        const materiaSalva = await MateriaService.cadastrar(req.body);
 
-            return res.status(201).json(
-                success(materiaSalva, "Matéria cadastrada com sucesso!")
-            );
+        return res.status(201).json(
+            success(materiaSalva, 'Materia cadastrada com sucesso!')
+        );
+    });
 
-        } catch (err) {
-            console.error("Erro ao cadastrar matéria:", err.message);
+    static listar = asyncHandler(async (req, res) => {
+        const { idUsuario } = req.params;
+        const materias = await MateriaService.listarPorUsuario(idUsuario);
 
-            return res.status(400).json(
-                error(err.message)
-            );
-        }
-    }
-
-    static async listar(req, res){
-        try {
-            const { idUsuario } = req.params;
-            
-            const materias = await MateriaService.listarPorUsuario(idUsuario);
-
-            if (!materias || materias.length === 0) {
+        if (!materias || materias.length === 0) {
             return res.status(200).json(
-                success([], "Nenhuma matéria encontrada")
+                success([], 'Nenhuma materia encontrada')
             );
         }
 
-return res.status(200).json(
-    success(materias, "Matérias listadas com sucesso")
-);
-
-        } catch (err) {
-            console.error("Erro ao listar matérias:", err.message);
-
-            return res.status(400).json(
-                error(err.message)
-            );
-        }
-    }
+        return res.status(200).json(
+            success(materias, 'Materias listadas com sucesso')
+        );
+    });
 }
+
 module.exports = MateriaController;
