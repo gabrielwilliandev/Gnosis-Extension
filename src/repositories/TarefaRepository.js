@@ -56,6 +56,25 @@ class TarefaRepository{
         }));
         
     }
+
+    //buscando no banco de dados a atividade selecionada pelo usuário
+    static async buscarSelecionadaPorUsuario(userId, tarefaId){
+        const{data, error} = await supabase
+        .from('tarefas')
+        .select(`
+            *, tarefas_materias(materias(id, nome)
+            )
+            `)
+            .eq('user_id',userId)
+            .eq('id',tarefaId)
+
+        if(error) throw new Error(`Erro ao buscar tarefa: ${error.message}`);
+
+        return data.map(tarefa => ({
+            ...tarefa,
+            materias: tarefa.tarefas_materias.map(tm => tm.materias)
+        })) 
+    }
 }
 
 module.exports = TarefaRepository;

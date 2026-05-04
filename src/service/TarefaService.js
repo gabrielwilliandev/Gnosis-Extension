@@ -17,6 +17,12 @@ class TarefaService {
         return await TarefaRepository.buscarPendentesPorUsuario(userId);
         
     }
+
+    static async listarSelecionada(userId, tarefaId){
+        if(!userId) throw new Error("O ID do usuário é obrigatório!");
+        if(!tarefaId) throw new Error ("O ID da tarefa é obrigatório");
+        return await TarefaRepository.buscarSelecionadaPorUsuario(userId,tarefaId);
+    }
 }
 
 module.exports = TarefaService;
