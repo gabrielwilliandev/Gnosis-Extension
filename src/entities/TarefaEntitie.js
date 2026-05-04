@@ -24,7 +24,7 @@ class TarefaEntitie {
   validar() {
     if (!this.titulo) throw new Error("O título da tarefa é obrigatório.");
     if (!this.data_vencimento) throw new Error("A data de vencimento é obrigatória.");
-   // if (!this.idUsuario) throw new Error("Toda tarefa deve ter um usuário responsável.");
+    if (!this.idUsuario) throw new Error("Toda tarefa deve ter um usuário responsável.");
   }
 }
 

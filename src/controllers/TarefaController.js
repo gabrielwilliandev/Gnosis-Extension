@@ -62,6 +62,33 @@ class TarefaController {
             );
         }
     }
+    static async atualizar(req, res) {
+    try {
+        const { id, titulo, descricao, status } = req.params;
+
+        const tarefaAtualizada = await TarefaService.atualizar(id, {
+            titulo,
+            descricao,
+            status
+        });
+
+            if (!tarefaAtualizada) {
+                return res.status(404).json(
+                    error("Tarefa não encontrada")
+                );
+            }
+
+            return res.status(200).json(
+                success(tarefaAtualizada, "Tarefa atualizada com sucesso")
+            );
+
+        } catch (err) {
+            console.error("Erro ao atualizar tarefa:", err.message);
+                return res.status(400).json(
+                    error(err.message)
+            );
+        }
+    }   
 }
 
 
