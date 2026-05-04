@@ -10,6 +10,8 @@ router.post('/', TarefaController.cadastrar);
 router.get('/usuario/:user_id', TarefaController.listar);
 // para extensão, serve para buscar as pentendes
 router.get('/usuario/:user_id/pendentes', TarefaController.listarPendentes);
+// para atualizar tarefas
+router.put('/activities/:id/:titulo/:descricao/:status', TarefaController.atualizar);
 
 router.get('/usuario/:user_id/:tarefaId',TarefaController.listarTarefaSelecionada);
 

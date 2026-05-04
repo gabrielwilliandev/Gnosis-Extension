@@ -1,3 +1,4 @@
+const { success, error } = require('../utils/response.js');
 const NotificacaoService = require('../services/NotificacaoService.js');
 
 class NotificacaoController {
@@ -5,13 +6,16 @@ class NotificacaoController {
         try {
             const notificacaoSalva = await NotificacaoService.criar(req.body);
 
-            return res.status(201).json({
-                mensagem: "Notificação agendada com sucesso!",
-                notificacao: notificacaoSalva
-            });
-        } catch (error) {
-            console.error("Erro ao criar notificação:", error.message);
-            return res.status(400).json({ erro: error.message });
+            return res.status(201).json(
+                success(notificacaoSalva, "Notificação agendada com sucesso!")
+            );
+
+        } catch (err) {
+            console.error("Erro ao criar notificação:", err.message);
+
+            return res.status(400).json(
+                error(err.message)
+            );
         }
     }
 }

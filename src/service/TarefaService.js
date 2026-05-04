@@ -1,5 +1,6 @@
 const TarefaEntitie = require('../entities/TarefaEntitie');
 const TarefaRepository = require('../repositories/TarefaRepository.js');
+const supabase = require('../config/supabase');
 
 class TarefaService {
     static async cadastrar(dadosTarefa) {
@@ -17,6 +18,19 @@ class TarefaService {
         return await TarefaRepository.buscarPendentesPorUsuario(userId);
         
     }
+    static async atualizar(id, dados) {
+        const { data, error } = await supabase
+            .from('tarefas')
+            .update(dados)
+            .eq('id', id)
+            .select();
+
+        if (error) {
+            throw new Error(error.message);
+        }
+
+        return data[0];
+    }
 
     static async listarSelecionada(userId, tarefaId){
         if(!userId) throw new Error("O ID do usuário é obrigatório!");
@@ -24,5 +38,6 @@ class TarefaService {
         return await TarefaRepository.buscarSelecionadaPorUsuario(userId,tarefaId);
     }
 }
+
 
 module.exports = TarefaService;

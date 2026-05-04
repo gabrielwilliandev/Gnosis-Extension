@@ -1,3 +1,4 @@
+const { success, error } = require('../utils/response.js');
 const MateriaService = require('../service/MateriaService.js');
 
 class MateriaController{
@@ -5,13 +6,16 @@ class MateriaController{
         try{
             const materiaSalva = await MateriaService.cadastrar(req.body);
 
-            return res.status(201).json({
-                mensagem: "Matéria cadastrada com sucesso!",
-                materia: materiaSalva
-            });
-        } catch (error){
-            console.error("Erro ao cadastrar matéria:", error.message);
-            return res.status(400).json({ erro: error.message });
+            return res.status(201).json(
+                success(materiaSalva, "Matéria cadastrada com sucesso!")
+            );
+
+        } catch (err) {
+            console.error("Erro ao cadastrar matéria:", err.message);
+
+            return res.status(400).json(
+                error(err.message)
+            );
         }
     }
 
@@ -20,10 +24,23 @@ class MateriaController{
             const { idUsuario } = req.params;
             
             const materias = await MateriaService.listarPorUsuario(idUsuario);
-            return res.status(200).json(materias);
-        } catch (error) {
-            console.error("Erro ao listar matérias:", error.message);
-            return res.status(400).json({ erro: error.message });
+
+            if (!materias || materias.length === 0) {
+            return res.status(200).json(
+                success([], "Nenhuma matéria encontrada")
+            );
+        }
+
+return res.status(200).json(
+    success(materias, "Matérias listadas com sucesso")
+);
+
+        } catch (err) {
+            console.error("Erro ao listar matérias:", err.message);
+
+            return res.status(400).json(
+                error(err.message)
+            );
         }
     }
 }
