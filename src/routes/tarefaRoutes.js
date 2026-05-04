@@ -13,4 +13,6 @@ router.get('/usuario/:user_id/pendentes', TarefaController.listarPendentes);
 // para atualizar tarefas
 router.put('/activities/:id/:titulo/:descricao/:status', TarefaController.atualizar);
 
+router.get('/usuario/:user_id/:tarefaId',TarefaController.listarTarefaSelecionada);
+
 module.exports = router;

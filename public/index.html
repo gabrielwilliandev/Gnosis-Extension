@@ -4,14 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gnosis - Login</title>
-    <script src="./js/default.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js"></script>
+    <script defer src="./js/default.js"></script>
 </head>
 <body>
     <div class="body-login d-flex col">
         <div class="w-50 col_login_e d-flex align-items-center row">
            <div class="logo-container">
                 <div class="logo-icon">
-                    <img id="logo_estrela" src="./img/logo_estrela.png" alt="Logo_estrela">
+                    <img id="logo_estrela" src="./img/logo_gnosis.png" alt="Logo_estrela">
                 </div>
                 
                 <span class="logo-text">Gnosis</span>
@@ -26,7 +27,7 @@
                     </section>
                     <section class="card-item">
                         <span class="status-dot dot-gold"></span>
-                        <p class="m-0">Foco no essencial (Minimalismo Grego)</p>
+                        <p class="m-0">Foco no essencial</p>
                     </section>
                 </div>
            </div>
@@ -60,8 +61,11 @@
                     </section>
 
                     <div class="d-grid mt-2">
-                        <button class="btn text-light BOTAO_DOURADO" style="padding: 0.75em 0px;" type="submit">
-                            <strong class="me-1">Entrar</strong> <i class="fa-solid fa-arrow-right"></i>
+                        <button id="btnEntrar" type="submit" class="btn text-light BOTAO_DOURADO d-flex justify-content-center align-items-center" style="padding: 0.75em 0px; height: 48px;">
+                    
+                        <span id="btn-text"><strong class="me-1">Entrar</strong> <i class="fa-solid fa-arrow-right"></i></span>
+                        
+                        <div id="lottie-login" class="d-none" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;"></div>
                         </button>
                     </div>
                 </form>
@@ -76,7 +80,7 @@
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content bg-light text-dark">
                     <div class="modal-header">
-                        <img id="logo_estrela" src="./img/logo_estrela.png" alt="logo_estrela">
+                        <img id="logo_estrela" src="./img/logo_gnosis.png" alt="logo_gnosis">
                         <h5 class="modal-title ms-2" id="exampleModalLabel">Gnosis - Cadastro</h5>
                         <button type="button" class="btn-close btn-close-black" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
@@ -127,7 +131,7 @@
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content bg-light text-dark">
                     <div class="modal-header">
-                        <img id="logo_estrela" src="./img/logo_estrela.png" alt="logo_estrela">
+                        <img id="logo_estrela" src="./img/logo_gnosis.png" alt="logo_gnosis">
                         <h5 class="modal-title ms-2" id="exampleModalLabel">Gnosis - Esqueceu Senha</h5>
                         <button type="button" class="btn-close btn-close-black" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>

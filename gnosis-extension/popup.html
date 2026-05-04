@@ -1,424 +1,713 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    :root {
-      --gnosis-dark: #0A1E29;
-      --gnosis-gold: #C08F52;
-      --gnosis-bg: #F4F5F7;
-      --gnosis-text: #1F333F;
-      --gnosis-success: #2e7d32;
-      --gnosis-danger: #c62828;
-      --gnosis-warning: #b58900;
-      --gnosis-card: #ffffff;
-      --gnosis-muted: #adb5bd;
-      --gnosis-border: #e7e9ee;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --gnosis-dark: #0a1e29;
+        --gnosis-gold: #c08f52;
+        --gnosis-bg: #f4f5f7;
+        --gnosis-text: #1f333f;
+        --gnosis-success: #2e7d32;
+        --gnosis-danger: #c62828;
+        --gnosis-warning: #b58900;
+        --gnosis-card: #ffffff;
+        --gnosis-muted: #adb5bd;
+        --gnosis-border: #e7e9ee;
+      }
 
-    body {
-      width: 360px;
-      height: 550px;
-      margin: 0;
-      background-color: var(--gnosis-bg);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      color: var(--gnosis-text);
-      overflow-x: hidden;
-      overflow-y: auto;
-    }
+      body {
+        width: 360px;
+        height: 550px;
+        margin: 0;
+        background-color: var(--gnosis-bg);
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        color: var(--gnosis-text);
+        overflow-x: hidden;
+        overflow-y: auto;
+      }
 
-    /* --- TELA DE LOGIN --- */
-    .login-header-bg {
-      background-color: var(--gnosis-dark);
-      height: 120px;
-      width: 100%;
-      position: absolute;
-      top: 0;
-      z-index: 1;
-    }
+      /* --- TELA DE LOGIN --- */
+      .login-header-bg {
+        background-color: var(--gnosis-dark);
+        height: 120px;
+        width: 100%;
+        position: absolute;
+        top: 0;
+        z-index: 1;
+      }
 
-    .login-card {
-      position: relative;
-      z-index: 2;
-      background: white;
-      border-radius: 16px;
-      margin: 60px 20px 20px 20px;
-      padding: 30px 20px 20px 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    }
+      .login-card {
+        position: relative;
+        z-index: 2;
+        background: white;
+        border-radius: 16px;
+        margin: 60px 20px 20px 20px;
+        padding: 30px 20px 20px 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      }
 
-    .icon-container {
-      position: absolute;
-      top: -25px;
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: var(--gnosis-dark);
-      width: 50px;
-      height: 50px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 3px solid white;
-    }
+      .icon-container {
+        position: absolute;
+        top: -25px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: var(--gnosis-dark);
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 3px solid white;
+      }
 
-    .btn-gold {
-      background-color: var(--gnosis-gold);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-weight: 600;
-    }
+      .btn-gold {
+        background-color: var(--gnosis-gold);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+      }
 
-    .btn-gold:hover {
-      background-color: #a87b45;
-      color: white;
-    }
+      .btn-gold:hover {
+        background-color: #a87b45;
+        color: white;
+      }
 
-    .input-group-custom {
-      border-radius: 8px;
-      overflow: hidden;
-      border: 1px solid #dee2e6;
-    }
+      .input-group-custom {
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #dee2e6;
+      }
 
-    .input-group-custom input {
-      border: none;
-      box-shadow: none !important;
-    }
+      .input-group-custom input {
+        border: none;
+        box-shadow: none !important;
+      }
 
-    .input-group-text {
-      background-color: white;
-      border: none;
-      color: #adb5bd;
-      padding-right: 0;
-    }
+      .input-group-text {
+        background-color: white;
+        border: none;
+        color: #adb5bd;
+        padding-right: 0;
+      }
 
-    /* --- TELA DE TAREFAS --- */
-    .task-header {
-      background-color: white;
-      padding: 12px 15px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+      /* --- TELA DE TAREFAS --- */
+      .task-header {
+        background-color: white;
+        padding: 12px 15px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
 
-    .task-avatar {
-      width: 35px;
-      height: 35px;
-      border-radius: 50%;
-      background-color: var(--gnosis-gold);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      font-size: 14px;
-      flex-shrink: 0;
-    }
+      .task-avatar {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background-color: var(--gnosis-gold);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 14px;
+        flex-shrink: 0;
+      }
 
-    .top-search-row {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      margin-bottom: 12px;
-    }
+      .top-search-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 12px;
+      }
 
-    .search-wrap {
-      flex: 1;
-      background: white;
-      border-radius: 12px;
-      overflow: hidden;
-      border: 1px solid var(--gnosis-border);
-      display: flex;
-      align-items: center;
-      padding-left: 10px;
-      min-height: 34px;
-    }
+      .search-wrap {
+        flex: 1;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid var(--gnosis-border);
+        display: flex;
+        align-items: center;
+        padding-left: 10px;
+        min-height: 34px;
+      }
 
-    .search-wrap input {
-      border: none;
-      outline: none;
-      box-shadow: none !important;
-      font-size: 0.78rem;
-      padding: 6px 8px 6px 8px;
-      background: transparent;
-    }
+      .search-wrap input {
+        border: none;
+        outline: none;
+        box-shadow: none !important;
+        font-size: 0.78rem;
+        padding: 6px 8px 6px 8px;
+        background: transparent;
+      }
 
-    .today-pill {
-      background-color: var(--gnosis-dark);
-      color: white;
-      padding: 7px 10px;
-      border-radius: 10px;
-      font-size: 0.7rem;
-      font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
+      .today-pill {
+        background-color: var(--gnosis-dark);
+        color: white;
+        padding: 7px 10px;
+        border-radius: 10px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
 
-    .nav-tabs-custom {
-      background: #eef0f2;
-      border-radius: 12px;
-      padding: 4px;
-      gap: 4px;
-    }
+      .nav-tabs-custom {
+        background: #eef0f2;
+        border-radius: 12px;
+        padding: 4px;
+        gap: 4px;
+      }
 
-    .nav-tabs-custom .nav-item {
-      flex: 1;
-    }
+      .nav-tabs-custom .nav-item {
+        flex: 1;
+      }
 
-    .nav-tabs-custom .nav-link {
-      width: 100%;
-      font-size: 0.7rem;
-      color: #9aa3ad;
-      font-weight: 700;
-      border-radius: 8px;
-      padding: 7px 8px;
-      border: none;
-      text-align: center;
-      background: transparent;
-      line-height: 1;
-    }
+      .nav-tabs-custom .nav-link {
+        width: 100%;
+        font-size: 0.7rem;
+        color: #9aa3ad;
+        font-weight: 700;
+        border-radius: 8px;
+        padding: 7px 8px;
+        border: none;
+        text-align: center;
+        background: transparent;
+        line-height: 1;
+      }
 
-    .nav-tabs-custom .nav-link.active {
-      background: white;
-      color: var(--gnosis-dark);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
+      .nav-tabs-custom .nav-link.active {
+        background: white;
+        color: var(--gnosis-dark);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      }
 
-    .task-card {
-      background: white;
-      border-radius: 14px;
-      padding: 14px 14px 13px 14px;
-      margin-bottom: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-      border: 1px solid rgba(0,0,0,0.03);
-      border-left: 4px solid var(--gnosis-gold);
-    }
+      .task-card {
+        background: white;
+        border-radius: 14px;
+        padding: 14px 14px 13px 14px;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        border: 1px solid rgba(0, 0, 0, 0.03);
+        border-left: 4px solid var(--gnosis-gold);
+      }
 
-    .task-card.feita {
-      border-left-color: var(--gnosis-success);
-      opacity: 0.72;
-    }
+      .task-card.feita {
+        border-left-color: var(--gnosis-success);
+        opacity: 0.72;
+      }
 
-    .task-card.nao-feita {
-      border-left-color: var(--gnosis-danger);
-    }
+      .task-card.nao-feita {
+        border-left-color: var(--gnosis-danger);
+      }
 
-    .task-card.pendente {
-      border-left-color: var(--gnosis-warning);
-    }
+      .task-card.pendente {
+        border-left-color: var(--gnosis-warning);
+      }
 
-    .task-meta {
-      font-size: 0.65rem;
-      color: #8f9aa8;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 10px;
-    }
+      .task-meta {
+        font-size: 0.65rem;
+        color: #8f9aa8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+      }
 
-    .task-title {
-      margin: 0;
-      font-size: 0.92rem;
-      font-weight: 800;
-      color: var(--gnosis-dark);
-      line-height: 1.2;
-    }
+      .task-title {
+        margin: 0;
+        font-size: 0.92rem;
+        font-weight: 800;
+        color: var(--gnosis-dark);
+        line-height: 1.2;
+      }
 
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      border-radius: 11px;
-      padding: 5px 10px;
-      font-size: 0.68rem;
-      font-weight: 700;
-      white-space: nowrap;
-      flex-shrink: 0;
-      border: 1px solid transparent;
-    }
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 11px;
+        padding: 5px 10px;
+        font-size: 0.68rem;
+        font-weight: 700;
+        white-space: nowrap;
+        flex-shrink: 0;
+        border: 1px solid transparent;
+      }
 
-    .status-pendente {
-      background: #fff4d9;
-      color: var(--gnosis-warning);
-      border-color: #ffe19a;
-    }
+      .status-pendente {
+        background: #fff4d9;
+        color: var(--gnosis-warning);
+        border-color: #ffe19a;
+      }
 
-    .status-feita {
-      background: #e4f6ea;
-      color: var(--gnosis-success);
-      border-color: #bfe8cb;
-    }
+      .status-feita {
+        background: #e4f6ea;
+        color: var(--gnosis-success);
+        border-color: #bfe8cb;
+      }
 
-    .status-nao-feita {
-      background: #fde7e9;
-      color: var(--gnosis-danger);
-      border-color: #f6b8bf;
-    }
+      .status-nao-feita {
+        background: #fde7e9;
+        color: var(--gnosis-danger);
+        border-color: #f6b8bf;
+      }
 
-    .small-icon-btn {
-      width: 28px;
-      height: 28px;
-      padding: 0;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 8px;
-    }
+      .small-icon-btn {
+        width: 28px;
+        height: 28px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+      }
 
-    .empty-state {
-      text-align: center;
-      margin-top: 36px;
-      color: #8b96a3;
-      font-size: 0.8rem;
-    }
+      .empty-state {
+        text-align: center;
+        margin-top: 36px;
+        color: #8b96a3;
+        font-size: 0.8rem;
+      }
 
-    .empty-state .icon {
-      display: block;
-      margin-bottom: 10px;
-      font-size: 1.3rem;
-    }
-  </style>
-</head>
-<body>
+      .empty-state .icon {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 1.3rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="view-login">
+      <div class="login-header-bg"></div>
 
-  <div id="view-login">
-    <div class="login-header-bg"></div>
+      <div class="login-card text-center">
+        <div class="icon-container">
+          <svg
+            version="1.1"
+            id="Layer_1"
+            xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+            x="0px"
+            y="0px"
+            width="45px"
+            height="45px"
+            viewBox="0 0 1024 960"
+            enable-background="new 0 0 100 100"
+            fill="var(--gnosis-gold)"
+            xml:space="preserve"
+          >
+            <path
+              opacity="1.000000"
+              stroke="none"
+              d="
+M675.985962,432.993958 
+ C677.117798,434.155090 677.352234,435.595612 677.335754,437.142181 
+ C677.182617,451.478546 678.010193,465.785645 679.398804,480.031342 
+ C682.717163,514.075012 691.070984,546.286255 714.789673,572.563843 
+ C726.129700,585.127258 739.749817,594.591980 755.121216,601.476318 
+ C759.046021,603.234192 760.532227,605.365662 760.455261,609.709656 
+ C760.195679,624.371033 760.231506,639.042297 760.465698,653.704834 
+ C760.536255,658.119934 759.027161,659.393066 754.706665,659.435547 
+ C714.047974,659.834778 673.391724,660.577454 632.729187,659.882263 
+ C624.234314,659.737061 615.730103,659.733765 607.249939,659.289368 
+ C602.617126,659.046570 601.346130,660.762024 601.156006,665.277039 
+ C599.731323,699.112183 584.676758,725.080261 554.624329,741.021729 
+ C501.479858,769.212341 437.596985,734.332275 429.623260,679.621216 
+ C428.880432,674.524536 428.140411,669.407349 427.839111,664.273865 
+ C427.652924,661.101746 426.311127,659.706665 423.347168,659.552368 
+ C421.518250,659.457214 419.684570,659.416382 417.852966,659.415222 
+ C370.354645,659.383911 322.856354,659.364502 275.358032,659.332886 
+ C268.160675,659.328064 268.141449,659.304871 268.120087,652.104858 
+ C268.079498,638.438721 268.206940,624.769897 267.951782,611.108032 
+ C267.872406,606.856934 269.203247,604.447937 273.195251,602.726074 
+ C300.161652,591.094788 319.902863,571.778137 332.928467,545.568909 
+ C341.028290,529.271118 345.083405,511.864716 346.772583,493.803619 
+ C348.494659,475.391144 348.861511,456.935547 348.651550,437.887634 
+ C353.280823,437.615540 357.561890,436.949921 361.789459,437.197479 
+ C372.117706,437.802277 382.448853,437.770966 392.771393,437.617798 
+ C397.268799,437.551117 398.349609,439.184082 398.388916,443.443420 
+ C398.657959,472.591156 424.843842,492.781128 453.030304,485.684662 
+ C460.860413,483.713257 467.149933,479.120422 472.630493,473.323975 
+ C473.976562,471.900299 474.968384,470.080383 477.610321,468.902008 
+ C494.350098,492.752197 505.171448,519.490540 516.057007,546.565369 
+ C523.636841,519.371643 536.082581,495.105225 554.480957,473.429230 
+ C559.858948,477.932007 564.964661,482.206787 571.686523,483.736755 
+ C584.435425,486.638428 595.659912,483.682861 604.614319,474.262268 
+ C613.727783,464.674286 617.465576,453.175018 612.846680,440.256897 
+ C611.129395,435.453979 612.461670,433.821533 616.784973,432.511139 
+ C634.266418,427.212738 651.785706,426.590973 669.443176,431.492859 
+ C671.364136,432.026123 673.323181,432.421753 675.643982,432.945374 
+ C676.023376,433.009552 675.985962,432.993958 675.985962,432.993958 
+z"
+            />
+            <path
+              opacity="1.000000"
+              stroke="none"
+              d="
+M676.042908,433.016357 
+ C662.278931,427.453613 648.239624,423.091400 633.236084,422.074615 
+ C611.577332,420.606781 592.080383,426.381897 574.244934,438.448029 
+ C549.289856,455.330780 530.724121,477.438202 519.271240,505.411499 
+ C518.606506,507.035004 518.476196,509.043976 516.495056,510.233063 
+ C514.268127,508.917175 514.177856,506.389282 513.411560,504.339294 
+ C505.812042,484.011169 497.530853,464.036011 484.269592,446.566559 
+ C457.668701,411.524414 422.642303,390.925323 378.981018,385.091736 
+ C371.386017,384.076965 363.795715,383.125122 356.108612,383.297791 
+ C354.804779,383.327087 353.418213,383.457916 352.265533,382.356506 
+ C351.548950,380.188599 352.542389,378.142212 353.156921,376.130890 
+ C373.169434,310.633179 416.948090,271.399078 483.982086,257.974579 
+ C497.788055,255.209763 511.783478,255.417343 525.775330,255.756073 
+ C528.782410,255.828873 531.219604,256.950012 533.456360,258.854065 
+ C557.050537,278.938660 581.037415,298.547516 605.365662,317.732635 
+ C608.796936,320.438507 608.279297,323.153412 607.244446,326.518158 
+ C599.320984,352.281555 591.460022,378.064209 583.594421,403.845367 
+ C583.125977,405.380920 582.785400,406.955444 582.385376,408.511810 
+ C582.696899,408.956360 583.008423,409.400909 583.319885,409.845459 
+ C614.223389,396.196442 645.126953,382.547424 675.666199,369.059265 
+ C677.713074,370.368652 677.349548,371.820465 677.351013,373.068298 
+ C677.372375,391.560486 677.356506,410.052704 677.337097,428.544922 
+ C677.335693,429.860474 677.521057,431.232544 676.282349,432.682068 
+ C675.985962,432.993958 676.023376,433.009552 676.042908,433.016357 
+z"
+            />
+            <path
+              opacity="1.000000"
+              stroke="none"
+              d="
+M734.978882,302.975891 
+ C727.138855,308.221619 726.871887,315.006683 728.695190,323.211670 
+ C732.517944,340.413879 735.527466,357.796875 738.850586,375.109558 
+ C738.966614,375.714050 738.865295,376.360260 738.865295,376.965790 
+ C736.407654,378.065277 734.845398,376.451996 733.190735,375.554688 
+ C716.645081,366.581970 700.076355,357.649017 683.645142,348.470245 
+ C680.009644,346.439362 677.246033,346.471771 673.571533,348.568176 
+ C656.357666,358.389313 638.950317,367.871521 621.605469,377.462860 
+ C620.478638,378.085968 619.420410,379.075745 617.435974,378.255096 
+ C617.545532,370.430603 619.583618,362.721893 621.075623,354.977905 
+ C623.560974,342.077606 626.259338,329.212128 629.212402,316.411438 
+ C630.243591,311.941254 629.220032,308.806580 625.923767,305.766693 
+ C612.576477,293.457184 599.357788,281.008026 586.120728,268.579376 
+ C584.454102,267.014526 582.435791,265.707947 581.648254,263.500031 
+ C581.994080,261.789154 583.286865,261.861084 584.411255,261.775879 
+ C604.671570,260.240326 624.505493,255.569061 644.703735,253.593414 
+ C648.041321,253.266983 649.475769,251.061325 650.716919,248.352676 
+ C658.070679,232.304123 665.449951,216.266953 672.916443,200.270676 
+ C674.073486,197.791794 674.530945,194.802612 677.208557,193.111740 
+ C680.048828,194.316879 680.732239,197.097275 681.851257,199.376617 
+ C689.411682,214.776230 697.031250,230.152573 704.207764,245.731720 
+ C706.655151,251.044693 709.910583,253.209290 715.802856,253.890167 
+ C735.253906,256.137756 754.617126,259.144897 774.389343,262.643066 
+ C762.399902,277.279755 748.732849,289.919769 734.978882,302.975891 
+z"
+            />
+          </svg>
+        </div>
 
-    <div class="login-card text-center">
-      <div class="icon-container">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gnosis-gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-        </svg>
-      </div>
+        <h4 class="fw-bold mt-2" style="color: var(--gnosis-dark)">
+          Gnosis Oracle
+        </h4>
+        <p class="text-muted small mb-4">
+          O seu universo acadêmico a um clique
+        </p>
 
-      <h4 class="fw-bold mt-2" style="color: var(--gnosis-dark);">Gnosis Oracle</h4>
-      <p class="text-muted small mb-4">O seu universo acadêmico a um clique</p>
-
-      <div class="text-start mb-4 small">
-        <div class="d-flex align-items-start mb-3">
-          <div class="me-2 mt-1" style="color: var(--gnosis-gold);">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-ui-checks" viewBox="0 0 16 16">
-              <path d="M7 2.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5zM2 1a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm0 8a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2zm.854-3.646a.5.5 0 0 1-.708 0l-1-1a.5.5 0 1 1 .708-.708l.646.647 1.646-1.647a.5.5 0 1 1 .708.708zm0 8a.5.5 0 0 1-.708 0l-1-1a.5.5 0 0 1 .708-.708l.646.647 1.646-1.647a.5.5 0 0 1 .708.708zM7 10.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5zm0-5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 8a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5"/>
-            </svg>
+        <div class="text-start mb-4 small">
+          <div class="d-flex align-items-start mb-3">
+            <div class="me-2 mt-1" style="color: var(--gnosis-gold)">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="currentColor"
+                class="bi bi-ui-checks"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M7 2.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5zM2 1a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm0 8a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2zm.854-3.646a.5.5 0 0 1-.708 0l-1-1a.5.5 0 1 1 .708-.708l.646.647 1.646-1.647a.5.5 0 1 1 .708.708zm0 8a.5.5 0 0 1-.708 0l-1-1a.5.5 0 0 1 .708-.708l.646.647 1.646-1.647a.5.5 0 0 1 .708.708zM7 10.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5zm0-5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 8a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5"
+                />
+              </svg>
+            </div>
+            <p class="mb-0 text-muted">
+              <strong>Veja suas estrelas:</strong> Acesse tarefas e trabalhos da
+              sua constelação de estudos.
+            </p>
           </div>
-          <p class="mb-0 text-muted"><strong>Veja suas estrelas:</strong> Acesse tarefas e trabalhos da sua constelação de estudos.</p>
-        </div>
 
-        <div class="d-flex align-items-start">
-          <div class="me-2 mt-1" style="color: var(--gnosis-gold);">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle" viewBox="0 0 16 16">
-              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-              <path d="m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05"/>
-            </svg>
+          <div class="d-flex align-items-start">
+            <div class="me-2 mt-1" style="color: var(--gnosis-gold)">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="currentColor"
+                class="bi bi-check-circle"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"
+                />
+                <path
+                  d="m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05"
+                />
+              </svg>
+            </div>
+            <p class="mb-0 text-muted">
+              <strong>Acompanhe a forma:</strong> Marque atividades e veja sua
+              constelação se completar.
+            </p>
           </div>
-          <p class="mb-0 text-muted"><strong>Acompanhe a forma:</strong> Marque atividades e veja sua constelação se completar.</p>
         </div>
       </div>
-    </div>
 
-    <div class="px-4 mt-4">
-      <p class="text-center fw-bold mb-3" style="color: var(--gnosis-dark);">Acesse sua constelação</p>
+      <div class="px-4 mt-4">
+        <p class="text-center fw-bold mb-3" style="color: var(--gnosis-dark)">
+          Acesse sua constelação
+        </p>
 
-      <div class="input-group input-group-custom mb-3 bg-white">
-        <span class="input-group-text">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-envelope" viewBox="0 0 16 16">
-            <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1zm13 2.383-4.708 2.825L15 11.105zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741M1 11.105l4.708-2.897L1 5.383z"/>
-          </svg>
-        </span>
-        <input type="email" class="form-control" id="email" placeholder="aluno@universidade.edu.br">
-      </div>
-
-      <div class="input-group input-group-custom mb-4 bg-white">
-        <span class="input-group-text">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-lock" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M8 0a4 4 0 0 1 4 4v2.05a2.5 2.5 0 0 1 2 2.45v5a2.5 2.5 0 0 1-2.5 2.5h-7A2.5 2.5 0 0 1 2 13.5v-5a2.5 2.5 0 0 1 2-2.45V4a4 4 0 0 1 4-4M4.5 7A1.5 1.5 0 0 0 3 8.5v5A1.5 1.5 0 0 0 4.5 15h7a1.5 1.5 0 0 0 1.5-1.5v-5A1.5 1.5 0 0 0 11.5 7zM8 1a3 3 0 0 0-3 3v2h6V4a3 3 0 0 0-3-3"/>
-          </svg>
-        </span>
-        <input type="password" class="form-control" id="senha" placeholder="••••••••••••">
-      </div>
-
-      <button id="btnConectar" class="btn btn-gold w-100 py-2 mb-3">Conectar</button>
-    </div>
-  </div>
-
-  <div id="view-tarefas" class="d-none">
-    <div class="task-header">
-      <div class="d-flex align-items-center">
-        <div class="task-avatar" id="userInitials">GN</div>
-        <div class="ms-2">
-          <p class="mb-0" style="font-size: 0.7rem; color: #adb5bd; text-transform: uppercase;">Olá,</p>
-          <h6 class="mb-0 fw-bold" id="userName" style="color: var(--gnosis-dark); font-size: 0.9rem;">Estudante</h6>
+        <div class="input-group input-group-custom mb-3 bg-white">
+          <span class="input-group-text">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              class="bi bi-envelope"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1zm13 2.383-4.708 2.825L15 11.105zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741M1 11.105l4.708-2.897L1 5.383z"
+              />
+            </svg>
+          </span>
+          <input
+            type="email"
+            class="form-control"
+            id="email"
+            placeholder="aluno@universidade.edu.br"
+          />
         </div>
-      </div>
-      <div>
-        <button id="btnAtualizar" class="btn btn-sm btn-light p-1 me-1 text-muted" title="Atualizar">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
-            <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
-          </svg>
+
+        <div class="input-group input-group-custom mb-4 bg-white">
+          <span class="input-group-text">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              class="bi bi-lock"
+              viewBox="0 0 16 16"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M8 0a4 4 0 0 1 4 4v2.05a2.5 2.5 0 0 1 2 2.45v5a2.5 2.5 0 0 1-2.5 2.5h-7A2.5 2.5 0 0 1 2 13.5v-5a2.5 2.5 0 0 1 2-2.45V4a4 4 0 0 1 4-4M4.5 7A1.5 1.5 0 0 0 3 8.5v5A1.5 1.5 0 0 0 4.5 15h7a1.5 1.5 0 0 0 1.5-1.5v-5A1.5 1.5 0 0 0 11.5 7zM8 1a3 3 0 0 0-3 3v2h6V4a3 3 0 0 0-3-3"
+              />
+            </svg>
+          </span>
+          <input
+            type="password"
+            class="form-control"
+            id="senha"
+            placeholder="••••••••••••"
+          />
+        </div>
+
+        <button id="btnConectar" class="btn btn-gold w-100 py-2 mb-3">
+          Conectar
         </button>
-        <button id="btnSair" class="btn btn-sm btn-light p-1 text-muted" title="Sair">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z"/>
-            <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
-          </svg>
-        </button>
-      </div>
-    </div>
-
-    <div class="p-3">
-      <div class="top-search-row">
-        <div class="search-wrap">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-search text-muted" viewBox="0 0 16 16">
-            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.014.017.03.033l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.033-.03zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
-          </svg>
-          <input type="text" id="searchInput" placeholder="Buscar nas estrelas...">
-        </div>
-
-        <div class="today-pill" id="todayPill">
-          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" class="bi bi-stars" viewBox="0 0 16 16">
-            <path d="M7.657 6.247c.11-.33.576-.33.686 0l.645 1.937a2.89 2.89 0 0 0 1.828 1.828l1.937.645c.329.11.329.576 0 .686l-1.937.645a2.89 2.89 0 0 0-1.828 1.829l-.645 1.936a.36.36 0 0 1-.686 0l-.645-1.937a2.89 2.89 0 0 0-1.828-1.828l-1.937-.645a.36.36 0 0 1 0-.686l1.937-.645a2.89 2.89 0 0 0 1.828-1.828z"/>
-            <path d="M3.794 1.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387A1.73 1.73 0 0 0 4.593 5.69l-.387 1.162a.217.217 0 0 1-.412 0L3.407 5.69A1.73 1.73 0 0 0 2.31 4.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387A1.73 1.73 0 0 0 3.407 2.31z"/>
-            <path d="M10.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.16 1.16 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.16 1.16 0 0 0-.732-.732L9.1 2.137a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732z"/>
-          </svg>
-          <span id="todayText">Hoje</span>
-        </div>
-      </div>
-
-      <ul class="nav nav-tabs nav-tabs-custom mb-3 border-0 d-flex justify-content-between">
-        <li class="nav-item">
-          <button class="nav-link active" type="button" data-filter="todas">TODAS</button>
-        </li>
-        <li class="nav-item">
-          <button class="nav-link" type="button" data-filter="pendentes">PENDENTES</button>
-        </li>
-        <li class="nav-item">
-          <button class="nav-link" type="button" data-filter="feitas">FEITAS</button>
-        </li>
-        <li class="nav-item">
-          <button class="nav-link" type="button" data-filter="nao-feitas">NÃO FEITAS</button>
-        </li>
-      </ul>
-
-      <div id="taskListContainer">
-        <div class="text-center mt-5 text-muted small d-flex align-items-center justify-content-center" id="loadingTasks">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-stars me-2" viewBox="0 0 16 16">
-            <path d="M7.657 6.247c.11-.33.576-.33.686 0l.645 1.937a2.89 2.89 0 0 0 1.829 1.828l1.936.645c.33.11.33.576 0 .686l-1.937.645a2.89 2.89 0 0 0-1.828 1.829l-.645 1.936a.361.361 0 0 1-.686 0l-.645-1.937a2.89 2.89 0 0 0-1.828-1.828l-1.937-.645a.361.361 0 0 1 0-.686l1.937-.645a2.89 2.89 0 0 0 1.828-1.828zM3.794 1.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387A1.73 1.73 0 0 0 4.593 5.69l-.387 1.162a.217.217 0 0 1-.412 0L3.407 5.69A1.73 1.73 0 0 0 2.31 4.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387A1.73 1.73 0 0 0 3.407 2.31zM10.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.16 1.16 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.16 1.16 0 0 0-.732-.732L9.1 2.137a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732z"/>
-          </svg>
-          Buscando estrelas...
+        <div class="text-center mt-2 mb-2">
+          <span class="text-muted small"
+            >Ainda não faz parte da constelação?</span
+          ><br />
+          <a
+            href="#"
+            id="btnCadastrar"
+            class="fw-bold small"
+            style="color: var(--gnosis-gold); text-decoration: none"
+            >Cadastre-se aqui</a
+          >
         </div>
       </div>
     </div>
-  </div>
 
-  <script src="popup.js"></script>
-</body>
+    <div id="view-tarefas" class="d-none">
+      <div class="task-header">
+        <div class="d-flex align-items-center">
+          <div class="task-avatar" id="userInitials">GN</div>
+          <div class="ms-2">
+            <p
+              class="mb-0"
+              style="
+                font-size: 0.7rem;
+                color: #adb5bd;
+                text-transform: uppercase;
+              "
+            >
+              Olá,
+            </p>
+            <h6
+              class="mb-0 fw-bold"
+              id="userName"
+              style="color: var(--gnosis-dark); font-size: 0.9rem"
+            >
+              Estudante
+            </h6>
+          </div>
+        </div>
+        <div>
+          <button
+            id="btnAtualizar"
+            class="btn btn-sm btn-light p-1 me-1 text-muted"
+            title="Atualizar"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              fill="currentColor"
+              class="bi bi-arrow-clockwise"
+              viewBox="0 0 16 16"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"
+              />
+              <path
+                d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"
+              />
+            </svg>
+          </button>
+          <button
+            id="btnSair"
+            class="btn btn-sm btn-light p-1 text-muted"
+            title="Sair"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              fill="currentColor"
+              class="bi bi-box-arrow-right"
+              viewBox="0 0 16 16"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z"
+              />
+              <path
+                fill-rule="evenodd"
+                d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="p-3">
+        <div class="top-search-row">
+          <div class="search-wrap">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              fill="currentColor"
+              class="bi bi-search text-muted"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.014.017.03.033l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.033-.03zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"
+              />
+            </svg>
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Buscar nas estrelas..."
+            />
+          </div>
+
+          <div class="today-pill" id="todayPill">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="13"
+              height="13"
+              fill="currentColor"
+              class="bi bi-stars"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M7.657 6.247c.11-.33.576-.33.686 0l.645 1.937a2.89 2.89 0 0 0 1.828 1.828l1.937.645c.329.11.329.576 0 .686l-1.937.645a2.89 2.89 0 0 0-1.828 1.829l-.645 1.936a.36.36 0 0 1-.686 0l-.645-1.937a2.89 2.89 0 0 0-1.828-1.828l-1.937-.645a.36.36 0 0 1 0-.686l1.937-.645a2.89 2.89 0 0 0 1.828-1.828z"
+              />
+              <path
+                d="M3.794 1.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387A1.73 1.73 0 0 0 4.593 5.69l-.387 1.162a.217.217 0 0 1-.412 0L3.407 5.69A1.73 1.73 0 0 0 2.31 4.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387A1.73 1.73 0 0 0 3.407 2.31z"
+              />
+              <path
+                d="M10.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.16 1.16 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.16 1.16 0 0 0-.732-.732L9.1 2.137a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732z"
+              />
+            </svg>
+            <span id="todayText">Hoje</span>
+          </div>
+        </div>
+
+        <ul
+          class="nav nav-tabs nav-tabs-custom mb-3 border-0 d-flex justify-content-between"
+        >
+          <li class="nav-item">
+            <button class="nav-link active" type="button" data-filter="todas">
+              TODAS
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" type="button" data-filter="pendentes">
+              PENDENTES
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" type="button" data-filter="feitas">
+              FEITAS
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" type="button" data-filter="nao-feitas">
+              NÃO FEITAS
+            </button>
+          </li>
+        </ul>
+
+        <div id="taskListContainer">
+          <div
+            class="text-center mt-5 text-muted small d-flex align-items-center justify-content-center"
+            id="loadingTasks"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              class="bi bi-stars me-2"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M7.657 6.247c.11-.33.576-.33.686 0l.645 1.937a2.89 2.89 0 0 0 1.829 1.828l1.936.645c.33.11.33.576 0 .686l-1.937.645a2.89 2.89 0 0 0-1.828 1.829l-.645 1.936a.361.361 0 0 1-.686 0l-.645-1.937a2.89 2.89 0 0 0-1.828-1.828l-1.937-.645a.361.361 0 0 1 0-.686l1.937-.645a2.89 2.89 0 0 0 1.828-1.828zM3.794 1.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387A1.73 1.73 0 0 0 4.593 5.69l-.387 1.162a.217.217 0 0 1-.412 0L3.407 5.69A1.73 1.73 0 0 0 2.31 4.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387A1.73 1.73 0 0 0 3.407 2.31zM10.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.16 1.16 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.16 1.16 0 0 0-.732-.732L9.1 2.137a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732z"
+              />
+            </svg>
+            Buscando estrelas...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
 </html>

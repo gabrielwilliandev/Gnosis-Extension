@@ -6,6 +6,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputEmail = document.getElementById('email');
     const inputSenha = document.getElementById('senha');
     const btnConectar = document.getElementById('btnConectar');
+<<<<<<< HEAD
+=======
+    const btnCadastrar = document.getElementById('btnCadastrar');
+    
+>>>>>>> bc5fa7e (feat: integracao da logo na extensao e animacao lottie no login web)
 
     // Referências DOM - Tela Tarefas
     const viewTarefas = document.getElementById('view-tarefas');
@@ -102,6 +107,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+<<<<<<< HEAD
+=======
+    btnCadastrar.addEventListener('click', (e) => {
+        e.preventDefault();
+        
+        chrome.tabs.create({ url: "http://localhost:8080/cadastro" });
+    });
+
+>>>>>>> bc5fa7e (feat: integracao da logo na extensao e animacao lottie no login web)
     btnSair.addEventListener('click', () => {
         chrome.storage.local.remove(['gnosis_token', 'gnosis_user'], () => {
             chrome.runtime.sendMessage({ acao: "PARAR_MONITORAMENTO" });

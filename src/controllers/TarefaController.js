@@ -64,7 +64,8 @@ class TarefaController {
     }
     static async atualizar(req, res) {
     try {
-        const { id, titulo, descricao, status } = req.params;
+        const { id } = req.params;
+        const { titulo, descricao, status } = req.body;
 
         const tarefaAtualizada = await TarefaService.atualizar(id, {
             titulo,
@@ -89,6 +90,24 @@ class TarefaController {
             );
         }
     }   
+
+   static async listarTarefaSelecionada(req, res){
+        try{
+            const { user_id, tarefaId } = req.params;
+            const tarefaSelecionada = await TarefaService.listarSelecionada(user_id, tarefaId);
+            
+            return res.status(200).json(
+                success(tarefaSelecionada, "Tarefa encontrada com sucesso")
+            );
+
+        } catch (err) {
+            console.error("Erro ao listar tarefa:", err.message);
+            
+            return res.status(400).json(
+                error(err.message)
+            );
+        }
+    }
 }
 
 
