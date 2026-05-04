@@ -36,6 +36,18 @@ class TarefaController {
             return res.status(400).json({ erro: error.mensage});
         }
     }
+
+    static async listarTarefaSelecionada(req, res){
+        try{
+            const{user_id, tarefaId} = req.params;
+            const tarefaSelecionada = await TarefaService.listarSelecionada(user_id,tarefaId);
+            return res.status(200).json(tarefaSelecionada);
+
+        }catch(error){
+            console.error("Erro ao listar tarefa:", error.message);
+            return res.status(400).json({ erro: error.message});
+        }
+    }
 }
 
 module.exports = TarefaController;

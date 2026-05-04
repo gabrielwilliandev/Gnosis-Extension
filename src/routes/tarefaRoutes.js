@@ -11,4 +11,6 @@ router.get('/usuario/:user_id', TarefaController.listar);
 // para extensão, serve para buscar as pentendes
 router.get('/usuario/:user_id/pendentes', TarefaController.listarPendentes);
 
+router.get('/usuario/:user_id/:tarefaId',TarefaController.listarTarefaSelecionada);
+
 module.exports = router;
