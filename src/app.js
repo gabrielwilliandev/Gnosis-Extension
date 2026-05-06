@@ -1,4 +1,5 @@
 const express = require('express');
+const mustacheExpress = require('mustache-express');
 const path = require('path')
 const cors = require('cors')
 
@@ -13,7 +14,11 @@ app.use(express.json());
 
 
 // Ligação com o front end
-app.use(express.static("public"));
+app.engine('html', mustacheExpress());
+app.set('view engine', 'html');
+app.set('views', __dirname + '/views');
+app.use(express.urlencoded({extended: true}))
+app.use(express.static(path.join(__dirname, '../public')));
 
 app.use('/api/tarefas', tarefaRoutes)
 app.use('/api/materias', materiaRoutes);
@@ -30,7 +35,17 @@ app.use(errorHandler);
 const PORT = 3000; 
 app.listen(PORT, () => {
     console.log(`🚀 Servidor de testes rodando na porta ${PORT}`);
-    console.log(`🔗 Health Check: http://localhost:${PORT}/api/health`);
+    //console.log(`🔗 Health Check: http://localhost:${PORT}/api/health`);
+    console.log(`🔗 Health Check: http://localhost:${PORT}`);
+});
+
+// DEFININDO AS ROTAS DE EXIBIÇÃO DAS PÁGINAS
+app.get('/', (req, res) => {
+    res.render('index', { title: 'Login' });
+});
+
+app.get('/home', (req, res) => {
+    res.render('home');
 });
 
 module.exports = app;

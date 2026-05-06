@@ -25,16 +25,6 @@ function carregarDependencias() {
 
 carregarDependencias();
 
-function toggleSenha(id, icone) {
-    const input = document.getElementById(id);
-    if (input.type === 'password') {
-        input.type = 'text';
-        icone.classList.replace('fa-eye', 'fa-eye-slash');
-    } else {
-        input.type = 'password';
-        icone.classList.replace('fa-eye-slash', 'fa-eye');
-    }
-}
 
 const API_BASE_URL = 'http://localhost:3000/api';
 
@@ -109,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('gnosis_token', data.token);
             localStorage.setItem('gnosis_user', data.usuario?.nome || "Estudante");
 
-            window.location.href = 'home.html';
+            window.location.href = '/home';
 
         } catch (error) {
             if (btnText && lottieContainer && animacaoCarregamento && btnEntrar) {
