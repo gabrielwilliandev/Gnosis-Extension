@@ -7,8 +7,132 @@
     <script defer src="/js/app_chamadas.js"></script>  
 </head>
 <body>
-    <div class="w-100 d-flex justify-content-center align-items-center" style="height: 100vh;">        
-        <h5>Página Home</h5>
-    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            function gerarIconUser(){
+                const usuario = JSON.parse(
+                    localStorage.getItem('dados_usuario')
+                );
+
+                const nome = usuario.nome || 'Estudante';
+                const email = usuario.email || 'estudante@gmail.com';
+                const icon = document.getElementById('icon-user');
+                const campo_email = document.getElementById('email-user');
+                const campo_nome = document.getElementById('nome-user');
+                
+                if(icon && campo_nome && campo_email){
+                    icon.innerText = nome.charAt(0).toUpperCase();
+                    campo_nome.innerText = nome;
+                    campo_email.innerText = email;
+                }
+                
+            }
+
+            gerarIconUser();
+        });
+    </script>
+    <div class="layout-home">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-top">
+            <div class="logo-container">
+                <div class="logo-icon">
+                    <img id="logo_estrela" src="./img/logo_gnosis.png">
+                </div>
+                <span class="logo-text">
+                    Gnosis
+                </span>
+            </div>
+
+            <div class="user-card">
+
+                <div class="icon_user" id="icon-user"></div>
+
+                <div>
+                    <h4 id="nome-user"></h4>
+                    <p id="email-user"></p>
+                </div>
+
+            </div>
+
+            <nav class="menu-sidebar">
+
+                <button class="menu-item active">
+                    Calendário
+                </button>
+
+                <button class="menu-item">
+                    Filtros
+                </button>
+
+            </nav>
+
+        </div>
+
+        <div class="sidebar-bottom">
+
+            <a href="#" class="logout-button">
+                Sair da Conta
+            </a>
+
+        </div>
+
+    </aside>
+
+    <!-- CONTEÚDO -->
+    <main class="main-content">
+
+        <!-- HEADER -->
+        <header class="topbar">
+
+            <div class="month-selector">
+                Abril 2026
+            </div>
+
+            <div class="topbar-actions">
+
+                <input
+                    type="text"
+                    placeholder="Buscar atividades..."
+                    class="search-input"
+                >
+
+                <button class="btn-add">
+                    + Nova Atividade
+                </button>
+
+            </div>
+
+        </header>
+
+        <!-- CALENDÁRIO -->
+        <section class="calendar-container">
+
+            <table class="calendar-table">
+
+                <thead>
+                    <tr>
+                        <th>DOM</th>
+                        <th>SEG</th>
+                        <th>TER</th>
+                        <th>QUA</th>
+                        <th>QUI</th>
+                        <th>SEX</th>
+                        <th>SAB</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <!-- DIAS -->
+                </tbody>
+
+            </table>
+
+        </section>
+
+    </main>
+
+</div>
 </body>
 </html>
