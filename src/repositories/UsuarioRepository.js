@@ -65,7 +65,8 @@ class UsuarioRepository {
                 token: authData.session.access_token,
                 usuario: {
                     id: authData.user.id,
-                    nome: profileData ? profileData.nome : 'Estudante'
+                    nome: profileData ? profileData.nome : 'Estudante',
+                    email: profileData ? profileData.email : 'estudante@gmail.com'
                 }
             };
         } catch (error) {

@@ -25,7 +25,6 @@ function carregarDependencias() {
 
 carregarDependencias();
 
-
 const API_BASE_URL = 'http://localhost:3000/api';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -97,6 +96,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             localStorage.setItem('gnosis_token', data.token);
+            console.log(data.usuario)
+            localStorage.setItem('dados_usuario',  JSON.stringify(data.data.usuario));
             localStorage.setItem('gnosis_user', data.usuario?.nome || "Estudante");
 
             window.location.href = '/home';
