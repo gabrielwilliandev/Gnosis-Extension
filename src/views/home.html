@@ -58,11 +58,11 @@
 
             <nav class="menu-sidebar">
 
-                <button class="menu-item active">
+                <button type="button" class="menu-item active">
                     Calendário
                 </button>
 
-                <button class="menu-item">
+                <button type="button" class="menu-item">
                     Filtros
                 </button>
 
@@ -71,9 +71,9 @@
         </div>
 
         <div class="sidebar-bottom">
-
-            <a href="#" class="logout-button">
-                Sair da Conta
+            <!-- POR ENQUANTO VOU COLOCAR APENAS PARA ELE VOLTAR PARA O INDEX -->
+            <a href="/" class="logout-button">
+                <i class="fa-solid fa-right-from-bracket me-2"></i> Sair da Conta
             </a>
 
         </div>
@@ -84,21 +84,22 @@
     <main class="main-content">
 
         <!-- HEADER -->
-        <header class="topbar">
-
-            <div class="month-selector">
-                Abril 2026
+        <header class="navbar-home">
+            <div class="mes-seletor">
+                <button id="mes-anterior" class="botoes-mes"><i class="fa-solid fa-angle-left"></i></button>
+                <span id="mes-ano" style="margin: 0px 20px;"></span>
+                <button id="proximo-mes" class="botoes-mes"><i class="fa-solid fa-angle-right"></i></button>
             </div>
 
-            <div class="topbar-actions">
+            <div class="havbar-home-acoes">
 
                 <input
                     type="text"
                     placeholder="Buscar atividades..."
-                    class="search-input"
+                    class="campo-pesquisa-atividade"
                 >
 
-                <button class="btn-add">
+                <button type="button" class="btn-add-atividade" data-bs-target="#cadastrar_atividade" data-bs-toggle="modal">
                     + Nova Atividade
                 </button>
 
@@ -107,24 +108,25 @@
         </header>
 
         <!-- CALENDÁRIO -->
-        <section class="calendar-container">
+        <section class="calendario-container">
 
-            <table class="calendar-table">
+            <table class="calendario">
 
                 <thead>
                     <tr>
-                        <th>DOM</th>
-                        <th>SEG</th>
-                        <th>TER</th>
-                        <th>QUA</th>
-                        <th>QUI</th>
-                        <th>SEX</th>
-                        <th>SAB</th>
+                        <th style="width: 14.285%;">Domingo</th>
+                        <th style="width: 14.285%;">Segunda</th>
+                        <th style="width: 14.285%;">Terça</th>
+                        <th style="width: 14.285%;">Quarta</th>
+                        <th style="width: 14.285%;">Quinta</th>
+                        <th style="width: 14.285%;">Sexta</th>
+                        <th style="width: 14.285%;">Sábado</th>
                     </tr>
                 </thead>
 
-                <tbody>
+                <tbody id="dias-calendario">
                     <!-- DIAS -->
+                    <!-- TEM QUE CRIAR UM LAÇO DE REPETIÇÃO DE ACORDO COM O DIA, DEFINIR OS IDS DE ACORDO COM DIA, MES E ANO, PARA PREENCHER DEPOIS DE FORMA DINÂMICA -->
                 </tbody>
 
             </table>
@@ -133,6 +135,46 @@
 
     </main>
 
-</div>
+    </div>
+    <!-- MODAIS -->
+     <div class="modal fade" id="cadastrar_atividade" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content bg-light text-dark">
+                    <div class="modal-header">
+                        <img id="logo_estrela" src="./img/logo_gnosis.png" alt="logo_gnosis">
+                        <h5 class="modal-title ms-2" id="exampleModalLabel">Gnosis - Cadastrar Atividade</h5>
+                        <button type="button" class="btn-close btn-close-black" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="form_cadastrar_atividade">
+                            <section class="m-2 mb-3">                       
+                                <div class="input-group-custom">
+                                    <i class="fa-solid fa-list-check icon-input"></i>
+                                    <input name="titulo_cadastrar_atividade" class="form-control custom-input bg-secondary bg-opacity-10" type="text" placeholder="Digite o Título da Atividade:" required>
+                                </div>
+                            </section>
+                            <section class="m-2 mb-3">                       
+                                <div class="input-group-custom">
+                                    <i class="fa-solid fa-hourglass-half icon-input"></i>
+                                    <input name="prazo_cadastrar_atividade" class="form-control custom-input bg-secondary bg-opacity-10" type="number" placeholder="Digite o prazo da Atividade:" required>
+                                </div>
+                            </section>
+                             <section class="m-2 mb-3">                       
+                                <div class="input-group-custom">
+                                    <i class="fa-regular fa-calendar icon-input"></i>
+                                    <input name="data_cadastrar_atividade" class="form-control custom-input bg-secondary bg-opacity-10" type="date" placeholder="Escolha uma data:" required>
+                                </div>
+                            </section>
+                            <div class="d-grid mt-2">
+                                <button type="button" class="btn text-light BOTAO_DOURADO">
+                                    <strong class="me-1">Cadastrar Atividade</strong>
+                                </button>
+                            </div>
+                        </form>
+                    </div>                    
+                </div>
+            </div>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

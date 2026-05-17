@@ -19,8 +19,7 @@ function carregarDependencias() {
     favicon.rel = 'icon';
     favicon.type = 'image/png';
     favicon.href = './img/logo_gnosis.png';
-
-    document.head.appendChild(favicon);
+    document.head.appendChild(favicon);    
 }
 
 carregarDependencias();
@@ -116,3 +115,108 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+// MONTAR CALENDARIO
+let dataAtual = new Date();
+let mesAtual = dataAtual.getMonth();
+let anoAtual = dataAtual.getFullYear();
+
+document.addEventListener('DOMContentLoaded', () => {montarCalendario(mesAtual, anoAtual);});
+
+document.getElementById('proximo-mes').addEventListener('click', () => {
+    mesAtual++;
+
+    if(mesAtual > 11){
+        mesAtual = 0;
+        anoAtual++;
+    }
+
+    montarCalendario(mesAtual, anoAtual);
+});
+
+document.getElementById('mes-anterior').addEventListener('click', () => {
+
+    mesAtual--;
+
+    if(mesAtual < 0){
+        mesAtual = 11;
+        anoAtual--;
+    }
+
+    montarCalendario(mesAtual, anoAtual);
+});
+
+function montarCalendario(mes, ano){
+    const meses = [
+        'Janeiro',
+        'Fevereiro',
+        'Março',
+        'Abril',
+        'Maio',
+        'Junho',
+        'Julho',
+        'Agosto',
+        'Setembro',
+        'Outubro',
+        'Novembro',
+        'Dezembro'
+    ];
+
+    const diasCalendario =
+        document.getElementById('dias-calendario');
+
+    const campoMesAno =
+        document.getElementById('mes-ano');
+
+    campoMesAno.innerText =
+        `${meses[mes]} ${ano}`;
+
+    // PRIMEIRO DIA DO MÊS
+    const primeiroDia =
+        new Date(ano, mes, 1).getDay();
+
+    // QUANTIDADE DE DIAS
+    const totalDias =
+        new Date(ano, mes + 1, 0).getDate();
+
+    let html = '<tr>';
+
+    // CAMPOS VAZIOS
+    for(let i = 0; i < primeiroDia; i++){
+        html += '<td></td>';
+    }
+
+    let contadorSemana = primeiroDia;
+
+    // DIAS
+    for(let dia = 1; dia <= totalDias; dia++){
+
+        html += `
+            <td id="dia_${dia}_${mes}_${ano}" data-bs-target="#cadastrar_atividade" data-bs-toggle="modal">
+                <span style="font-size: 14px; font-weight: bold;">${dia}</span>
+            </td>
+        `;
+
+        contadorSemana++;
+
+        if(contadorSemana === 7){
+
+            html += '</tr>';
+
+            if(dia !== totalDias){
+                html += '<tr>';
+            }
+
+            contadorSemana = 0;
+        }
+    }
+
+    html += '</tr>';
+
+    diasCalendario.innerHTML = html;
+}
+
+// CRIAR ATIVIDADE 
+function popup_cadastrar_atividade(dia){
+   
+}
