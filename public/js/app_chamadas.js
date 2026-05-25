@@ -98,6 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log(data.usuario)
             localStorage.setItem('dados_usuario',  JSON.stringify(data.data.usuario));
             localStorage.setItem('gnosis_user', data.usuario?.nome || "Estudante");
+            localStorage.setItem('gnosis_email', data.usuario?.email || "estudante@email.com.br");
 
             window.location.href = '/home';
 

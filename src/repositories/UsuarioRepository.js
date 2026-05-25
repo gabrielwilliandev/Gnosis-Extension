@@ -53,7 +53,7 @@ class UsuarioRepository {
 
             const { data: profileData, error: profileError } = await supabase
                 .from('usuarios')
-                .select('nome')
+                .select('nome, email')
                 .eq('id', authData.user.id)
                 .single();
 
