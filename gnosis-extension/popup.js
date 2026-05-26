@@ -12,15 +12,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnAtualizar = document.getElementById('btnAtualizar');
     const taskListContainer = document.getElementById('taskListContainer');
     const searchInput = document.getElementById('searchInput');
+    const todayPill = document.getElementById('todayPill');
     const todayText = document.getElementById('todayText');
+    const filterMenu = document.getElementById('filterMenu');
+    const selectPeriodo = document.getElementById('selectPeriodo');
+    const containerMateriasFiltro = document.getElementById('containerMateriasFiltro');
     const tabs = document.querySelectorAll('.nav-tabs-custom .nav-link');
 
     let tarefasCache = [];
     let filtroAtual = 'todas';
     let termoBusca = '';
+    
+    // Variáveis para o Menu Customizado
+    let filtroPeriodo = 'todos'; // 'todos', 'hoje', 'semana', 'mes'
+    let materiasSelecionadas = []; // Array de strings com as matérias marcadas
 
     init();
-    atualizarDataHoje();
     configurarEventosFiltro();
 
     function init() {
@@ -32,19 +39,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 buscarTarefas(usuario.id);
                 return;
             }
-
             mostrarTelaLogin();
         });
-    }
-
-    function atualizarDataHoje() {
-        const hoje = new Date();
-        const dia = hoje.getDate();
-        const mes = hoje.toLocaleDateString('pt-BR', { month: 'short' })
-            .replace('.', '')
-            .replace(/^./, (letra) => letra.toUpperCase());
-
-        todayText.textContent = `Hoje, ${dia.toString().padStart(2, '0')} ${mes}`;
     }
 
     function configurarEventosFiltro() {
@@ -61,92 +57,33 @@ document.addEventListener('DOMContentLoaded', () => {
             termoBusca = searchInput.value.trim().toLowerCase();
             renderizarTarefas();
         });
+
+        // Alternar a exibição do Menu de Filtros
+        todayPill.addEventListener('click', (e) => {
+            e.stopPropagation();
+            filterMenu.classList.toggle('d-none');
+            atualizarEstiloBotaoFiltro();
+        });
+
+        // Impede que cliques dentro do menu fechem ele acidentalmente
+        filterMenu.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
+        // Fechar o menu se clicar em qualquer outro lugar da tela
+        document.addEventListener('click', () => {
+            filterMenu.classList.add('d-none');
+        });
+
+        // Escutar a mudança do seletor de período (data)
+        selectPeriodo.addEventListener('change', () => {
+            filtroPeriodo = selectPeriodo.value;
+            renderizarTarefas();
+            atualizarEstiloBotaoFiltro();
+        });
     }
 
-    btnConectar.addEventListener('click', async () => {
-        const email = inputEmail.value.trim();
-        const senha = inputSenha.value.trim();
-
-        if (!email || !senha) {
-            alert('Preencha e-mail e senha para continuar.');
-            return;
-        }
-
-        btnConectar.innerHTML = 'Conectando...';
-        btnConectar.disabled = true;
-
-        try {
-            const response = await fetch(`${API_BASE_URL}/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, senha })
-            });
-
-            const payload = await response.json();
-
-            if (!response.ok || !payload.success) {
-                throw new Error(payload.message || 'Credenciais invalidas');
-            }
-
-            const token = payload.data?.token;
-            const usuario = payload.data?.usuario;
-
-            if (!token || !usuario?.id) {
-                throw new Error('Resposta de login incompleta.');
-            }
-
-            chrome.storage.local.set({
-                gnosis_token: token,
-                gnosis_user: usuario
-            }, () => {
-                chrome.runtime.sendMessage({
-                    acao: 'INICIAR_MONITORAMENTO',
-                    token,
-                    userId: usuario.id
-                });
-
-                mostrarTelaTarefas(usuario);
-                buscarTarefas(usuario.id);
-            });
-        } catch (error) {
-            alert(error.message || 'Erro ao conectar. Verifique a API e suas credenciais.');
-        } finally {
-            btnConectar.innerHTML = 'Conectar';
-            btnConectar.disabled = false;
-        }
-    });
-
-    btnCadastrar.addEventListener('click', (e) => {
-        e.preventDefault();
-        chrome.tabs.create({ url: 'http://localhost:8080/cadastro' });
-    });
-
-    btnSair.addEventListener('click', () => {
-        chrome.storage.local.remove(['gnosis_token', 'gnosis_user', 'tarefas_notificadas'], () => {
-            chrome.runtime.sendMessage({ acao: 'PARAR_MONITORAMENTO' });
-            inputEmail.value = '';
-            inputSenha.value = '';
-            tarefasCache = [];
-            filtroAtual = 'todas';
-            termoBusca = '';
-            searchInput.value = '';
-
-            tabs.forEach((t) => t.classList.remove('active'));
-            tabs[0].classList.add('active');
-
-            mostrarTelaLogin();
-        });
-    });
-
-    btnAtualizar.addEventListener('click', () => {
-        chrome.storage.local.get(['gnosis_user'], (resultado) => {
-            const userId = resultado.gnosis_user?.id;
-            if (userId) {
-                buscarTarefas(userId);
-            }
-        });
-    });
-
+    // Gerenciamento de Telas (Fix do erro de ReferenceError)
     function mostrarTelaLogin() {
         viewTarefas.classList.add('d-none');
         viewLogin.classList.remove('d-none');
@@ -161,94 +98,189 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('userInitials').innerText = nomeUsuario.substring(0, 2).toUpperCase();
     }
 
+    // Altera a cor do botão principal caso tenha filtros selecionados
+    function atualizarEstiloBotaoFiltro() {
+        const temFiltroAtivo = filtroPeriodo !== 'todos' || materiasSelecionadas.length > 0;
+        if (temFiltroAtivo) {
+            todayPill.style.backgroundColor = 'var(--gnosis-gold)';
+            todayText.textContent = 'Filtrando';
+        } else {
+            todayPill.style.backgroundColor = 'var(--gnosis-dark)';
+            todayText.textContent = 'Filtrar';
+        }
+    }
+
+    // Mapeia a lista de tarefas recebidas e gera a lista de checkboxes de matérias únicas
+    function gerarMenuMaterias() {
+        const materiasUnicas = new Set();
+        
+            tarefasCache.forEach(t => {
+            const disc = obterDisciplina(t).trim();
+            if (disc) materiasUnicas.add(disc);
+        });
+
+        containerMateriasFiltro.innerHTML = '';
+
+        if (materiasUnicas.size === 0) {
+            containerMateriasFiltro.innerHTML = '<span class="text-muted italic">Nenhuma matéria</span>';
+            return;
+        }
+
+        materiasUnicas.forEach(materia => {
+            const checked = materiasSelecionadas.includes(materia) ? 'checked' : '';
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'form-check mb-1';
+            itemDiv.innerHTML = `
+                <input class="form-check-input chk-materia-filtro" type="checkbox" value="${materia}" id="chk-${materia}" ${checked}>
+                <label class="form-check-label text-truncate" for="chk-${materia}" style="max-width: 140px; font-size: 0.75rem; user-select: none;">
+                    ${materia}
+                </label>
+            `;
+
+            const chk = itemDiv.querySelector('.chk-materia-filtro');
+            chk.addEventListener('change', () => {
+                if (chk.checked) {
+                    materiasSelecionadas.push(materia);
+                } else {
+                    materiasSelecionadas = materiasSelecionadas.filter(m => m !== materia);
+                }
+                renderizarTarefas();
+                atualizarEstiloBotaoFiltro();
+            });
+
+            containerMateriasFiltro.appendChild(itemDiv);
+        });
+    }
+
     async function buscarTarefas(userId) {
-        taskListContainer.innerHTML = `
-            <div class="text-center mt-5 text-muted small d-flex align-items-center justify-content-center" id="loadingTasks">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-stars me-2" viewBox="0 0 16 16">
-                    <path d="M7.657 6.247c.11-.33.576-.33.686 0l.645 1.937a2.89 2.89 0 0 0 1.829 1.828l1.936.645c.33.11.33.576 0 .686l-1.937.645a2.89 2.89 0 0 0-1.828 1.829l-.645 1.936a.361.361 0 0 1-.686 0l-.645-1.937a2.89 2.89 0 0 0-1.828-1.828l-1.937-.645a.361.361 0 0 1 0-.686l1.937-.645a2.89 2.89 0 0 0 1.828-1.828zM3.794 1.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387A1.73 1.73 0 0 0 4.593 5.69l-.387 1.162a.217.217 0 0 1-.412 0L3.407 5.69A1.73 1.73 0 0 0 2.31 4.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387A1.73 1.73 0 0 0 3.407 2.31zM10.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.16 1.16 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.16 1.16 0 0 0-.732-.732L9.1 2.137a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732z"/>
-                </svg>
-                Buscando estrelas...
-            </div>`;
+        // ... mantém a injeção do HTML de loading Tasks aqui ...
 
-        try {
-            const response = await fetch(`${API_BASE_URL}/tarefas/usuario/${encodeURIComponent(userId)}`);
-            const payload = await response.json();
+        // Puxa o token e faz a requisição protegida
+        chrome.storage.local.get(['gnosis_token'], async (resultado) => {
+            const token = resultado.gnosis_token;
 
-            if (!response.ok || !payload.success) {
-                throw new Error(payload.message || 'Erro ao buscar tarefas');
+            try {
+                const response = await fetch(`${API_BASE_URL}/tarefas/usuario/${encodeURIComponent(userId)}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}` // <-- PROTEÇÃO AQUI
+                    }
+                });
+                const payload = await response.json();
+
+                if (!response.ok || !payload.success) {
+                    throw new Error(payload.message || 'Erro ao buscar tarefas');
+                }
+
+                let tarefasbrutas = Array.isArray(payload.data) ? payload.data : [];
+
+                tarefasbrutas.sort((a, b) => {
+                    const dataA = new Date(a.data_vencimento || a.data_entrega || a.dataEntrega || a.data);
+                    const dataB = new Date(b.data_vencimento || b.data_entrega || b.dataEntrega || b.data);
+                    const aValida = !Number.isNaN(dataA.getTime());
+                    const bValida = !Number.isNaN(dataB.getTime());
+
+                    if (aValida && bValida) return dataA - dataB;
+                    if (aValida) return -1;
+                    if (bValida) return 1;
+                    return 0;
+                });
+
+                tarefasCache = tarefasbrutas;
+                gerarMenuMaterias(); 
+                renderizarTarefas();
+            } catch (error) {
+                taskListContainer.innerHTML = `
+                    <div class="text-center mt-4 text-danger small">
+                        Falha ao carregar a constelacao.<br>${error.message || 'Verifique se a API esta online.'}
+                    </div>`;
             }
-
-            tarefasCache = Array.isArray(payload.data) ? payload.data : [];
-            renderizarTarefas();
-        } catch (error) {
-            taskListContainer.innerHTML = `
-                <div class="text-center mt-4 text-danger small">
-                    Falha ao carregar a constelacao.<br>${error.message || 'Verifique se a API esta online.'}
-                </div>`;
-        }
+        });
     }
 
-    function normalizarStatus(status) {
-        if (!status) return 'pendente';
+    async function alterarStatusTarefa(id, titulo, descricao, statusAtual) {
+        const novoStatus = normalizarStatus(statusAtual) === 'feita' ? 'pendente' : 'feita';
 
-        const s = String(status).toLowerCase().trim();
+        // Puxa o token de forma assíncrona do storage da extensão
+        chrome.storage.local.get(['gnosis_token'], async (resultado) => {
+            const token = resultado.gnosis_token;
 
-        if (['feita', 'feito', 'concluida', 'concluída', 'done', 'completed'].includes(s)) {
-            return 'feita';
-        }
+            try {
+                const URL = `${API_BASE_URL}/tarefas/activities/${encodeURIComponent(id)}`;
+                const dadosParaAtualizar = {
+                    titulo: titulo || 'Sem titulo',
+                    descricao: descricao || 'Sem descricao',
+                    status: novoStatus
+                };
 
-        if (['nao-feita', 'não feita', 'nao feita', 'nao_feita', 'não_feita', 'incompleta', 'cancelada'].includes(s)) {
-            return 'nao-feita';
-        }
+                const response = await fetch(URL, {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` // <-- PROTEÇÃO AQUI
+                    },
+                    body: JSON.stringify(dadosParaAtualizar)
+                });
+                
+                if (!response.ok) throw new Error(`Servidor respondeu com status ${response.status}`);
+                const payload = await response.json();
 
-        return 'pendente';
-    }
-
-    function statusTexto(statusNormalizado) {
-        if (statusNormalizado === 'feita') return 'Feito';
-        if (statusNormalizado === 'nao-feita') return 'Nao Feito';
-        return 'Pendente';
-    }
-
-    function statusBadgeClass(statusNormalizado) {
-        if (statusNormalizado === 'feita') return 'status-feita';
-        if (statusNormalizado === 'nao-feita') return 'status-nao-feita';
-        return 'status-pendente';
-    }
-
-    function getStatusIcon(statusNormalizado) {
-        if (statusNormalizado === 'feita') {
-            return `
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M6.97 10.03a.75.75 0 0 0 1.08.02l3.992-4.99a.75.75 0 0 0-1.16-.971L7.58 8.42 5.98 6.82a.75.75 0 1 0-1.06 1.06l2.05 2.05Z"/>
-                </svg>`;
-        }
-
-        if (statusNormalizado === 'nao-feita') {
-            return `
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M4.646 4.646a.5.5 0 0 0 0 .708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646a.5.5 0 0 0-.708 0Z"/>
-                </svg>`;
-        }
-
-        return `
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M8 0a.5.5 0 0 1 .5.5V2h1a.5.5 0 0 1 0 1h-1v1.5a.5.5 0 0 1-1 0V3H7a.5.5 0 0 1 0-1h1V.5A.5.5 0 0 1 8 0ZM3 8a.5.5 0 0 1 .5-.5H5v-1a.5.5 0 0 1 1 0v1h1.5a.5.5 0 0 1 0 1H6v1a.5.5 0 0 1-1 0v-1H3.5A.5.5 0 0 1 3 8Zm8.5-4a.5.5 0 0 0-1 0v1H9a.5.5 0 0 0 0 1h1.5v1a.5.5 0 0 0 1 0V6H14a.5.5 0 0 0 0-1h-1.5V4Z"/>
-            </svg>`;
+                if (payload.success) {
+                    const idx = tarefasCache.findIndex(t => t.id === id);
+                    if (idx !== -1) {
+                        tarefasCache[idx].status = novoStatus;
+                        renderizarTarefas();
+                    }
+                }
+            } catch (err) {
+                alert(`Uai, deu erro ao atualizar: ${err.message}`);
+            }
+        });
     }
 
     function aplicarFiltros(lista) {
         return lista.filter((t) => {
             const statusNormalizado = normalizarStatus(t.status);
 
-            const passaFiltro =
+            // 1. Filtro por Aba Superior
+            const passaFiltroAba =
                 filtroAtual === 'todas' ||
                 (filtroAtual === 'pendentes' && statusNormalizado === 'pendente') ||
                 (filtroAtual === 'feitas' && statusNormalizado === 'feita') ||
                 (filtroAtual === 'nao-feitas' && statusNormalizado === 'nao-feita');
 
-            if (!passaFiltro) return false;
+            if (!passaFiltroAba) return false;
 
+            // 2. Filtro Avançado por Período de Tempo
+            if (filtroPeriodo !== 'todos') {
+                const dataTarefaStr = t.data_vencimento || t.data_entrega || t.dataEntrega || t.data;
+                if (!dataTarefaStr) return false;
+
+                const dataTarefa = new Date(dataTarefaStr);
+                const hoje = new Date();
+                
+                const dTarefa = new Date(dataTarefa.getFullYear(), dataTarefa.getMonth(), dataTarefa.getDate());
+                const dHoje = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+                
+                const diferencaTempo = dTarefa - dHoje;
+                const diferencaDias = Math.ceil(diferencaTempo / (1000 * 60 * 60 * 24));
+
+                if (filtroPeriodo === 'hoje') {
+                    if (dTarefa.toLocaleDateString('pt-BR') !== dHoje.toLocaleDateString('pt-BR')) return false;
+                } else if (filtroPeriodo === 'semana') {
+                    if (diferencaDias < 0 || diferencaDias > 7) return false; 
+                } else if (filtroPeriodo === 'mes') {
+                    if (diferencaDias < 0 || diferencaDias > 30) return false; 
+                }
+            }
+
+            // 3. Filtro Avançado por Múltiplas Matérias (Checkboxes)
+            if (materiasSelecionadas.length > 0) {
+                const disciplinaTarefa = obterDisciplina(t).trim();
+                if (!materiasSelecionadas.includes(disciplinaTarefa)) return false;
+            }
+
+            // 4. Filtro por Caixa de Texto (Busca livre)
             if (!termoBusca) return true;
 
             const materiaTexto = Array.isArray(t.materias)
@@ -270,6 +302,36 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function normalizarStatus(status) {
+        if (!status) return 'pendente';
+        const s = String(status).toLowerCase().trim();
+        if (['feita', 'feito', 'concluida', 'concluída', 'done', 'completed'].includes(s)) return 'feita';
+        if (['nao-feita', 'não feita', 'nao feita', 'nao_feita', 'não_feita', 'incompleta', 'cancelada'].includes(s)) return 'nao-feita';
+        return 'pendente';
+    }
+
+    function statusTexto(statusNormalizado) {
+        if (statusNormalizado === 'feita') return 'Feito';
+        if (statusNormalizado === 'nao-feita') return 'Não Feito';
+        return 'Pendente';
+    }
+
+    function statusBadgeClass(statusNormalizado) {
+        if (statusNormalizado === 'feita') return 'status-feita';
+        if (statusNormalizado === 'nao-feita') return 'status-nao-feita';
+        return 'status-pendente';
+    }
+
+    function getStatusIcon(statusNormalizado) {
+        if (statusNormalizado === 'feita') {
+            return `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M6.97 10.03a.75.75 0 0 0 1.08.02l3.992-4.99a.75.75 0 0 0-1.16-.971L7.58 8.42 5.98 6.82a.75.75 0 1 0-1.06 1.06l2.05 2.05Z"/></svg>`;
+        }
+        if (statusNormalizado === 'nao-feita') {
+            return `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M4.646 4.646a.5.5 0 0 0 0 .708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646a.5.5 0 0 0-.708 0Z"/></svg>`;
+        }
+        return `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0a.5.5 0 0 1 .5.5V2h1a.5.5 0 0 1 0 1h-1v1.5a.5.5 0 0 1-1 0V3H7a.5.5 0 0 1 0-1h1V.5A.5.5 0 0 1 8 0ZM3 8a.5.5 0 0 1 .5-.5H5v-1a.5.5 0 0 1 1 0v1h1.5a.5.5 0 0 1 0 1H6v1a.5.5 0 0 1-1 0v-1H3.5A.5.5 0 0 1 3 8Zm8.5-4a.5.5 0 0 0-1 0v1H9a.5.5 0 0 0 0 1h1.5v1a.5.5 0 0 0 1 0V6H14a.5.5 0 0 0 0-1h-1.5V4Z"/></svg>`;
+    }
+
     function formatarData(data) {
         if (!data) return '';
         const d = new Date(data);
@@ -281,7 +343,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (Array.isArray(tarefa.materias) && tarefa.materias.length > 0) {
             return tarefa.materias.map((materia) => materia.nome).filter(Boolean).join(', ');
         }
-
         return tarefa.disciplina || 'Geral';
     }
 
@@ -307,41 +368,102 @@ document.addEventListener('DOMContentLoaded', () => {
             const statusNormalizado = normalizarStatus(t.status);
             const dataFormatada = formatarData(t.data_vencimento || t.data_entrega || t.dataEntrega || t.data);
             const disciplina = obterDisciplina(t);
-            const titulo = t.titulo || t.nome || 'Sem titulo';
+            const titulo = t.titulo || t.nome || 'Sem título';
 
-            const cardHTML = `
-                <div class="task-card ${statusNormalizado}">
-                    <div class="d-flex justify-content-between align-items-start gap-2">
-                        <div class="flex-grow-1">
-                            <p class="mb-1 task-meta">
-                                <span class="d-inline-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="me-1" viewBox="0 0 16 16">
-                                      <path d="M1 2.828c.885-.37 2.154-.769 3.388-.893 1.33-.134 2.458.063 3.112.752v9.746c-.935-.53-2.12-.603-3.213-.493-1.18.12-2.37.461-3.287.811zm7.5-.141c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492zM8 1.783C7.015.936 5.587.815 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.815 8.985.936 8 1.783"/>
-                                    </svg>
-                                    ${disciplina}
-                                </span>
-
-                                <span class="d-inline-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="me-1" viewBox="0 0 16 16">
-                                      <path d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5z"/>
-                                      <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
-                                    </svg>
-                                    ${dataFormatada || 'Sem data'}
-                                </span>
-                            </p>
-
-                            <h6 class="task-title">${titulo}</h6>
-                        </div>
-
-                        <div class="status-badge ${statusBadgeClass(statusNormalizado)}">
-                            ${getStatusIcon(statusNormalizado)}
-                            ${statusTexto(statusNormalizado)}
-                        </div>
+            const card = document.createElement('div');
+            card.className = `task-card ${statusNormalizado}`;
+            
+            card.innerHTML = `
+                <div class="d-flex justify-content-between align-items-start gap-2">
+                    <div class="flex-grow-1">
+                        <p class="mb-1 task-meta">
+                            <span class="d-inline-flex align-items-center" style="font-weight: 700;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="me-1" viewBox="0 0 16 16">
+                                  <path d="M1 2.828c.885-.37 2.154-.769 3.388-.893 1.33-.134 2.458.063 3.112.752v9.746c-.935-.53-2.12-.603-3.213-.493-1.18.12-2.37.461-3.287.811zm7.5-.141c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492zM8 1.783C7.015.936 5.587.815 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.815 8.985.936 8 1.783"/>
+                                </svg>
+                                ${disciplina}
+                            </span>
+                            <span class="d-inline-flex align-items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="me-1" viewBox="0 0 16 16">
+                                  <path d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5z"/>
+                                  <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
+                                </svg>
+                                ${dataFormatada || 'Sem data'}
+                            </span>
+                        </p>
+                        <h6 class="task-title">${titulo}</h6>
+                    </div>
+                    <div class="status-badge ${statusBadgeClass(statusNormalizado)}" style="cursor: pointer;" title="Clique para alterar o status">
+                        ${getStatusIcon(statusNormalizado)}
+                        <span>${statusTexto(statusNormalizado)}</span>
                     </div>
                 </div>
             `;
 
-            taskListContainer.innerHTML += cardHTML;
+            const badge = card.querySelector('.status-badge');
+            badge.addEventListener('click', (e) => {
+                e.stopPropagation();
+                alterarStatusTarefa(t.id, t.titulo, t.descricao, t.status);
+            });
+
+            taskListContainer.appendChild(card);
         });
     }
+
+    btnSair.addEventListener('click', () => {
+        chrome.storage.local.remove(['gnosis_token', 'gnosis_user', 'tarefas_notificadas'], () => {
+            chrome.runtime.sendMessage({ acao: 'PARAR_MONITORAMENTO' });
+            inputEmail.value = '';
+            inputSenha.value = '';
+            tarefasCache = [];
+            filtroAtual = 'todas';
+            termoBusca = '';
+            searchInput.value = '';
+            filtroPeriodo = 'todos';
+            materiasSelecionadas = [];
+            selectPeriodo.value = 'todos';
+            atualizarEstiloBotaoFiltro();
+            tabs.forEach((t) => t.classList.remove('active'));
+            tabs[0].classList.add('active');
+            mostrarTelaLogin();
+        });
+    });
+
+    btnConectar.addEventListener('click', async () => {
+        const email = inputEmail.value.trim();
+        const senha = inputSenha.value.trim();
+
+        if (!email || !senha) {
+            alert('Preencha e-mail e senha para continuar.');
+            return;
+        }
+
+        btnConectar.innerHTML = 'Conectando...';
+        btnConectar.disabled = true;
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, senha })
+            });
+
+            const payload = await response.json();
+            if (!response.ok || !payload.success) throw new Error(payload.message || 'Credenciais invalidas');
+
+            const token = payload.data?.token;
+            const usuario = payload.data?.usuario;
+
+            chrome.storage.local.set({ gnosis_token: token, gnosis_user: usuario }, () => {
+                chrome.runtime.sendMessage({ acao: 'INICIAR_MONITORAMENTO', token, userId: usuario.id });
+                mostrarTelaTarefas(usuario);
+                buscarTarefas(usuario.id);
+            });
+        } catch (error) {
+            alert(error.message || 'Erro ao conectar.');
+        } finally {
+            btnConectar.innerHTML = 'Conectar';
+            btnConectar.disabled = false;
+        }
+    });
 });

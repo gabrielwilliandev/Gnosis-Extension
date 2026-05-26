@@ -2,14 +2,19 @@
 const express = require('express');
 const router = express.Router();
 const UsuarioController = require('../controllers/usuarioController');
+const authHandler = require('../middlewares/authHandler');
+
+// 1. ROTAS PÚBLICAS (Sem autenticação)
+
+router.post('/login', UsuarioController.login);
+router.post('/cadastrar', UsuarioController.cadastrar);
+
+// 2. MIDDLEWARE DE PROTEÇÃO
+
+router.use(authHandler);
+
+// 3. ROTAS PRIVADAS (Exigem estar logado)
 
 // router.get('/', UsuarioController.listarUsuarios);
 
-router.post('/login', UsuarioController.login);
-
-router.post('/cadastrar', UsuarioController.cadastrar);
-
-module.exports = router
-
-
-
+module.exports = router;

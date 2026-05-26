@@ -31,13 +31,29 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 
 async function checarTarefasPendentes() {
     try {
-        const data = await chrome.storage.local.get(['gnosis_user', 'tarefas_notificadas']);
+        // Declarando a data atual logo no topo do escopo da função
+        const agora = new Date();
+
+        // ADICIONADO: Puxa o gnosis_token junto com os outros dados do storage
+        const data = await chrome.storage.local.get(['gnosis_user', 'gnosis_token', 'tarefas_notificadas']);
+        
         const userId = data.gnosis_user?.id;
+        const token = data.gnosis_token; // <--- AGORA ELE EXISTE E ESTÁ DECLARADO!
         let notificadas = data.tarefas_notificadas || [];
 
-        if (!userId) return;
+        // Se o usuário não estiver logado ou o token sumiu, aborta para evitar erros na API
+        if (!userId || !token) {
+            console.log('[Gnosis Oracle] Usuário não autenticado ou token ausente. Pulando checagem.');
+            return;
+        }
 
-        const response = await fetch(`${API_BASE_URL}/tarefas/usuario/${encodeURIComponent(userId)}`);
+        const response = await fetch(`${API_BASE_URL}/tarefas/usuario/${encodeURIComponent(userId)}/pendentes`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`, // <-- Vai enviar redondo para o authHandler
+                'Content-Type': 'application/json'
+            }
+        });
         const payload = await response.json();
 
         if (!response.ok || !payload.success) {
@@ -51,9 +67,46 @@ async function checarTarefasPendentes() {
         });
 
         pendentes.forEach((tarefa) => {
-            if (!notificadas.includes(tarefa.id)) {
-                dispararNotificacao(tarefa);
-                notificadas.push(tarefa.id);
+            const dataReferencia = tarefa.data_vencimento || tarefa.data_entrega;
+            if (!dataReferencia) return;
+
+            const prazo = new Date(dataReferencia);
+            const diferencaMs = prazo - agora; 
+
+            if (diferencaMs <= 0) return; // Tarefa já venceu
+
+            const mS_EM_HORA = 60 * 60 * 1000;
+            const horasRestantes = diferencaMs / mS_EM_HORA;
+
+            // Definição dos gatilhos com base no tempo que falta
+            let gatilho = null;
+            let mensagemPrazo = '';
+
+            if (horasRestantes <= 1) {
+                gatilho = '1h';
+                mensagemPrazo = 'Falta apenas 1 hora!';
+            } else if (horasRestantes <= 12) {
+                gatilho = '12h';
+                mensagemPrazo = 'Faltam 12 horas!';
+            } else if (horasRestantes <= 24) {
+                gatilho = '1d';
+                mensagemPrazo = 'Falta 1 dia!';
+            } else if (horasRestantes <= 72) {
+                gatilho = '3d';
+                mensagemPrazo = 'Faltam 3 dias!';
+            } else if (horasRestantes <= 168) {
+                gatilho = '1w';
+                mensagemPrazo = 'Falta 1 semana!';
+            }
+
+            if (gatilho) {
+                const chaveNotificacao = `${tarefa.id}-${gatilho}`;
+                
+                // Só notifica se esse gatilho específico ainda não foi disparado para esta tarefa
+                if (!notificadas.includes(chaveNotificacao)) {
+                    dispararNotificacao(tarefa, mensagemPrazo);
+                    notificadas.push(chaveNotificacao);
+                }
             }
         });
 
@@ -63,7 +116,7 @@ async function checarTarefasPendentes() {
     }
 }
 
-function dispararNotificacao(tarefa) {
+function dispararNotificacao(tarefa, mensagemPrazo) {
     let prazoFormatado = 'Sem prazo definido';
     const dataReferencia = tarefa.data_vencimento || tarefa.data_entrega;
 
@@ -79,7 +132,7 @@ function dispararNotificacao(tarefa) {
         type: 'basic',
         iconUrl: 'icon.png',
         title: disciplina,
-        message: `${tarefa.titulo}\nPrazo: ${prazoFormatado}`,
+        message: `${tarefa.titulo}\nPrazo: ${prazoFormatado}\n${mensagemPrazo}`,
         priority: 2,
         requireInteraction: true
     });
