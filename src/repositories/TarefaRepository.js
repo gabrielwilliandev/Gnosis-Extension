@@ -1,6 +1,7 @@
 const supabase = require('../config/supabase');
 const AppError = require('../errors/AppError');
 
+
 class TarefaRepository {
     static async salvar(tarefaEntity) {
         const { data: tarefaSalva, error: erroTarefa } = await supabase.rpc('criar_tarefa_completa', {
@@ -83,6 +84,18 @@ class TarefaRepository {
             materias: tarefa.tarefas_materias.map((tm) => tm.materias)
         }));
     }
+    static async deletar(id) {
+    const { data, error } = await supabase
+        .from('tarefas')
+        .delete()
+        .eq('id', id);
+
+    if (error) {
+        throw new Error(error.message);
+    }
+
+    return data;
+}
 }
 
 module.exports = TarefaRepository;

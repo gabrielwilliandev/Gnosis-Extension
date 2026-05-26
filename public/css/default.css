@@ -395,3 +395,116 @@ body {
 
     padding:10px;
 }
+//STATUS DOS CARDS
+.task-card{
+    border-radius:16px;
+    padding:14px;
+    margin-bottom:12px;
+
+    border-left:6px solid transparent;
+
+    background:white;
+
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+
+    transition:0.2s;
+}
+
+.task-card:hover{
+    transform:translateY(-2px);
+}
+
+
+.task-card.pendente{
+    background:#fff8e6;
+    border-left-color:#BF914D;
+}
+
+.task-card.feita{
+    background:#e8fff1;
+    border-left-color:#2ecc71;
+}
+
+.task-card.nao-feita{
+    background:#ffecec;
+    border-left-color:#e74c3c;
+}
+
+.status-badge{
+    display:flex;
+    align-items:center;
+    gap:5px;
+
+    padding:6px 10px;
+
+    border-radius:999px;
+
+    font-size:12px;
+    font-weight:600;
+}
+
+.status-pendente{
+    background:#fff1cc;
+    color:#9a6700;
+}
+
+.status-feita{
+    background:#d9fbe8;
+    color:#146c43;
+}
+
+.status-nao-feita{
+    background:#ffdede;
+    color:#a61b1b;
+}
+
+.task-title{
+    font-size:15px;
+    font-weight:700;
+    margin-top:6px;
+}
+
+.task-meta{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+
+    font-size:12px;
+    color:#6b7280;
+}
+
+.legenda-status{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:16px;
+
+    margin-bottom:16px;
+
+    font-size:13px;
+}
+
+.legenda-item{
+    display:flex;
+    align-items:center;
+    gap:6px;
+}
+
+.legenda-cor{
+    width:12px;
+    height:12px;
+    border-radius:50%;
+}
+
+.cor-pendente{
+    background:#BF914D;
+}
+
+.cor-feita{
+    background:#2ecc71;
+}
+
+.cor-nao-feita{
+    background:#e74c3c;
+}
+
