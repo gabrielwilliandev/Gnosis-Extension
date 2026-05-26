@@ -155,10 +155,25 @@
                             </section>
                             <section class="m-2 mb-3">                       
                                 <div class="input-group-custom">
+                                    <i class="fa-solid fa-file-alt icon-input"></i>
+                                    <input name="descricao_cadastrar_atividade" class="form-control custom-input bg-secondary bg-opacity-10" type="text" placeholder="Digite a Descrição da Atividade:">
+                                </div>
+                            </section>
+                            <section class="m-2 mb-3">                       
+                                <div class="input-group-custom">
+                                    <select class="form-select custom-input bg-secondary bg-opacity-10" name="materia_cadastrar_atividade">
+                                        <option selected value="0">Escolha uma matéria</option>
+                                        <!-- FAZER UMA REQUISIÇÃO DO TIPO GET PARA PEGAR TODAS AS MATERIAS CADASTRADAS -->
+                                    </select>
+                                </div>
+                            </section>
+                            <section class="m-2 mb-3">                       
+                                <div class="input-group-custom">
                                     <i class="fa-solid fa-hourglass-half icon-input"></i>
                                     <input name="prazo_cadastrar_atividade" class="form-control custom-input bg-secondary bg-opacity-10" type="number" placeholder="Digite o prazo da Atividade:" required>
                                 </div>
                             </section>
+                            <!-- CASO O USUÁRIO CLICA NA DATA, ESSE CAMPO DEVE VIR COMO DESABILITADO E COM A DATA PREENCHIDA POR AQUELA QUE O USUÁRIO ESCOLHEU -->
                              <section class="m-2 mb-3">                       
                                 <div class="input-group-custom">
                                     <i class="fa-regular fa-calendar icon-input"></i>
