@@ -10,6 +10,14 @@ class MateriaController {
             success(materiaSalva, 'Materia cadastrada com sucesso!')
         );
     });
+    
+    static deletar = asyncHandler(async (req, res) => {
+        const { idMateria } = req.params;
+        await MateriaService.deletar(idMateria);
+        return res.status(200).json(
+            success(null, 'Materia deletada com sucesso!')
+        );
+    });
 
     static listar = asyncHandler(async (req, res) => {
         const { idUsuario } = req.params;

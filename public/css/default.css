@@ -395,7 +395,6 @@ body {
 
     padding:10px;
 }
-//STATUS DOS CARDS
 .task-card{
     border-radius:16px;
     padding:14px;
@@ -507,4 +506,39 @@ body {
 .cor-nao-feita{
     background:#e74c3c;
 }
+input[type="color"].custom-input {
+    padding: 0 16px 0 45px !important; /* Respeita o espaço do ícone na esquerda */
+    background-color: rgba(108, 117, 125, 0.1) !important; /* Mantém o bg-secondary bg-opacity-10 */
+    border: 1px solid transparent;
+    border-radius: 12px; /* Padroniza com os outros inputs (era 8px) */
+    cursor: pointer;
+    height: 50px; /* Alinha com a altura padronizada */
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
 
+/* Efeito de foco acompanhando os outros inputs */
+input[type="color"].custom-input:focus {
+    outline: none;
+    border-color: #32A3B1 !important; /* Cor identitária do Gnosis */
+    background-color: rgba(108, 117, 125, 0.15) !important;
+}
+
+/* Remove as bordas internas e cantos retos nativos no Chrome, Edge e Safari */
+input[type="color"].custom-input::-webkit-color-swatch-wrapper {
+    padding: 10px 0; /* Espaçamento vertical para a pílula de cor */
+    background: none;
+}
+
+input[type="color"].custom-input::-webkit-color-swatch {
+    border: none;
+    border-radius: 8px; /* Deixa a pílula de cor interna com borda mais amigável */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), inset 0 0 0 1px rgba(0, 0, 0, 0.05); /* Sombra elegante */
+}
+
+/* Mesma correção de arredondamento para o Firefox */
+input[type="color"].custom-input::-moz-color-swatch {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+    height: 30px;
+}

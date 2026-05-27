@@ -410,23 +410,26 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    btnSair.addEventListener('click', () => {
-        chrome.storage.local.remove(['gnosis_token', 'gnosis_user', 'tarefas_notificadas'], () => {
-            chrome.runtime.sendMessage({ acao: 'PARAR_MONITORAMENTO' });
-            inputEmail.value = '';
-            inputSenha.value = '';
-            tarefasCache = [];
-            filtroAtual = 'todas';
-            termoBusca = '';
-            searchInput.value = '';
-            filtroPeriodo = 'todos';
-            materiasSelecionadas = [];
-            selectPeriodo.value = 'todos';
-            atualizarEstiloBotaoFiltro();
-            tabs.forEach((t) => t.classList.remove('active'));
-            tabs[0].classList.add('active');
-            mostrarTelaLogin();
-        });
+    btnSair.addEventListener('click', async () => {
+        await chrome.cookies.remove({ url: API_BASE_URL, name: 'gnosis_token' });
+        await chrome.cookies.remove({ url: API_BASE_URL, name: 'gnosis_user' });
+        
+        chrome.storage.local.remove(['tarefas_notificadas'], () => {});
+        
+        chrome.runtime.sendMessage({ acao: 'PARAR_MONITORAMENTO' });
+        inputEmail.value = '';
+        inputSenha.value = '';
+        tarefasCache = [];
+        filtroAtual = 'todas';
+        termoBusca = '';
+        searchInput.value = '';
+        filtroPeriodo = 'todos';
+        materiasSelecionadas = [];
+        selectPeriodo.value = 'todos';
+        atualizarEstiloBotaoFiltro();
+        tabs.forEach((t) => t.classList.remove('active'));
+        tabs[0].classList.add('active');
+        mostrarTelaLogin();
     });
 
     btnConectar.addEventListener('click', async () => {
@@ -454,16 +457,23 @@ document.addEventListener('DOMContentLoaded', () => {
             const token = payload.data?.token;
             const usuario = payload.data?.usuario;
 
-            chrome.storage.local.set({ gnosis_token: token, gnosis_user: usuario }, () => {
-                chrome.runtime.sendMessage({ acao: 'INICIAR_MONITORAMENTO', token, userId: usuario.id });
-                mostrarTelaTarefas(usuario);
-                buscarTarefas(usuario.id);
-            });
+            await chrome.cookies.set({ url: API_BASE_URL, name: 'gnosis_token', value: token, path: '/' });
+            await chrome.cookies.set({ url: API_BASE_URL, name: 'gnosis_user', value: encodeURIComponent(JSON.stringify(usuario)), path: '/' });
+
+            chrome.runtime.sendMessage({ acao: 'INICIAR_MONITORAMENTO', token, userId: usuario.id });
+            mostrarTelaTarefas(usuario);
+            buscarTarefas(usuario.id);
         } catch (error) {
             alert(error.message || 'Erro ao conectar.');
         } finally {
             btnConectar.innerHTML = 'Conectar';
             btnConectar.disabled = false;
         }
+    });
+
+    btnCadastrar.addEventListener('click', (e) => {
+        e.preventDefault();
+        const frontendUrl = API_BASE_URL.replace('/api', '/');
+        chrome.tabs.create({ url: frontendUrl });
     });
 });
