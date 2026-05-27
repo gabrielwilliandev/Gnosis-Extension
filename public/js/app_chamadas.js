@@ -192,7 +192,7 @@ function montarCalendario(mes, ano) {
     let contadorSemana = primeiroDia;
 
     for (let dia = 1; dia <= totalDias; dia++) {
-        html += `<td id="dia_${dia}_${mes}_${ano}" data-bs-target="#cadastrar_atividade" data-bs-toggle="modal" style="cursor: pointer;"><span style="font-size: 14px; font-weight: bold;">${dia}</span></td>`;
+        html += `<td id="dia_${dia}_${mes}_${ano}" onclick="cadastrar_atividade('${ano}-${mes}-${dia}');" data-bs-toggle="modal" style="cursor: pointer;"><span style="font-size: 14px; font-weight: bold;">${dia}</span></td>`;
         contadorSemana++;
         if (contadorSemana === 7) {
             html += '</tr>';
@@ -202,6 +202,34 @@ function montarCalendario(mes, ano) {
     }
     html += '</tr>';
     diasCalendario.innerHTML = html;
+}
+
+// PARA EXIBIR A DATA NO CAMPO - CADASTRAR ATIVIDADE
+function add_zero(string){
+    if (string.length < 2) {
+        return '0' + string;
+    }
+    return string;
+}
+
+function cadastrar_atividade(data){
+    
+    const meuModal = new bootstrap.Modal('#cadastrar_atividade'); 
+    if(data != ''){        
+        console.log(data); // 2026-1-1
+        const dt = data.split('-');
+        const ano = dt[0];
+        const mes = add_zero(add_zero(dt[1]));
+        const dia = add_zero(add_zero(dt[2]));        
+        const data_final = `${ano}-${mes}-${dia}`;
+        console.log(data_final); // 2026-01-01
+        $('#data_cadastrar_atividade').val(data_final);   
+        $('#data_cadastrar_atividade').prop('disabled', true); // Desabilitando o campo
+    } else {
+        $('#data_cadastrar_atividade').val('');
+        $('#data_cadastrar_atividade').prop('disabled', false);
+    }
+    meuModal.show();
 }
 
 // --- CONTROLE DOS DADOS NA HOME ---
@@ -226,6 +254,11 @@ function gerarIconUser() {
     } catch (e) {
         console.error('Erro ao ler dados do usuário do cookie:', e);
     }
+}
+
+function exibir_cadastrar_materia(){ 
+    const modal = new bootstrap.Modal('#cadastrar_materia');
+    modal.show();
 }
 
 function carregarMaterias() {
