@@ -34,12 +34,21 @@ async function checarTarefasPendentes() {
         // Declarando a data atual logo no topo do escopo da função
         const agora = new Date();
 
-        // ADICIONADO: Puxa o gnosis_token junto com os outros dados do storage
-        const data = await chrome.storage.local.get(['gnosis_user', 'gnosis_token', 'tarefas_notificadas']);
+        // Puxa o token e os dados do usuário usando cookies ao invés do local storage
+        const cookieUser = await chrome.cookies.get({ url: API_BASE_URL, name: 'gnosis_user' });
+        const cookieToken = await chrome.cookies.get({ url: API_BASE_URL, name: 'gnosis_token' });
         
-        const userId = data.gnosis_user?.id;
-        const token = data.gnosis_token; // <--- AGORA ELE EXISTE E ESTÁ DECLARADO!
-        let notificadas = data.tarefas_notificadas || [];
+        const dataStorage = await chrome.storage.local.get(['tarefas_notificadas']);
+        let notificadas = dataStorage.tarefas_notificadas || [];
+
+        let userId = null;
+        if (cookieUser && cookieUser.value) {
+            try {
+                const usuario = JSON.parse(decodeURIComponent(cookieUser.value));
+                userId = usuario.id;
+            } catch (err) { console.error('[Gnosis Oracle] Falha ao ler cookie:', err); }
+        }
+        const token = cookieToken ? cookieToken.value : null;
 
         // Se o usuário não estiver logado ou o token sumiu, aborta para evitar erros na API
         if (!userId || !token) {

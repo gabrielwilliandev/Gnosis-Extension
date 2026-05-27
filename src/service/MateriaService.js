@@ -7,6 +7,14 @@ class MateriaService {
         const novaMateria = new MateriaEntitie(dadosMateria);
         return await MateriaRepository.salvar(novaMateria);
     }
+    static async deletar(idMateria) {
+        if (!idMateria) {
+            throw new ValidationError('Falha ao deletar materia.', [
+                { field: 'idMateria', message: 'Nao e possivel deletar materia sem identificar a materia.' }
+            ]);
+        }
+        return await MateriaRepository.deletar(idMateria);
+    }
 
     static async listarPorUsuario(idUsuario) {
         if (!idUsuario) {

@@ -34,13 +34,23 @@
         position: relative;
       }
 
+      /* Oculta a barra de rolagem visualmente, mas mantém o scroll funcionando */
+      body::-webkit-scrollbar {
+        display: none;
+      }
+
       /* --- TELA DE LOGIN --- */
+      #view-login {
+        padding-top: 60px; /* Substitui a margem do card para evitar colapso */
+      }
+
       .login-header-bg {
         background-color: var(--gnosis-dark);
         height: 120px;
         width: 100%;
         position: absolute;
         top: 0;
+        left: 0;
         z-index: 1;
       }
 
@@ -49,8 +59,7 @@
         z-index: 2;
         background: white;
         border-radius: 16px;
-       /*margin: 60px 20px 20px 20px;*/
-        margin: 60px 20px 30px 20px;
+        margin: 0 20px 30px 20px;
         padding: 30px 20px 20px 20px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
       }

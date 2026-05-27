@@ -7,30 +7,6 @@
     <script defer src="/js/app_chamadas.js"></script>  
 </head>
 <body>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            function gerarIconUser(){
-                const usuario = JSON.parse(
-                    localStorage.getItem('dados_usuario')
-                );
-
-                const nome = usuario.nome || 'Estudante';
-                const email = usuario.email || 'estudante@gmail.com';
-                const icon = document.getElementById('icon-user');
-                const campo_email = document.getElementById('email-user');
-                const campo_nome = document.getElementById('nome-user');
-                
-                if(icon && campo_nome && campo_email){
-                    icon.innerText = nome.charAt(0).toUpperCase();
-                    campo_nome.innerText = nome;
-                    campo_email.innerText = email;
-                }
-                
-            }
-
-            gerarIconUser();
-        });
-    </script>
     <div class="layout-home">
 
     <!-- SIDEBAR -->
@@ -72,7 +48,7 @@
 
         <div class="sidebar-bottom">
             <!-- POR ENQUANTO VOU COLOCAR APENAS PARA ELE VOLTAR PARA O INDEX -->
-            <a href="/" class="logout-button">
+            <a href="#" id="btn-logout" class="logout-button">
                 <i class="fa-solid fa-right-from-bracket me-2"></i> Sair da Conta
             </a>
 
@@ -138,58 +114,97 @@
     </div>
     <!-- MODAIS -->
      <div class="modal fade" id="cadastrar_atividade" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content bg-light text-dark">
-                    <div class="modal-header">
-                        <img id="logo_estrela" src="./img/logo_gnosis.png" alt="logo_gnosis">
-                        <h5 class="modal-title ms-2" id="exampleModalLabel">Gnosis - Cadastrar Atividade</h5>
-                        <button type="button" class="btn-close btn-close-black" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="form_cadastrar_atividade">
-                            <section class="m-2 mb-3">                       
-                                <div class="input-group-custom">
-                                    <i class="fa-solid fa-list-check icon-input"></i>
-                                    <input name="titulo_cadastrar_atividade" class="form-control custom-input bg-secondary bg-opacity-10" type="text" placeholder="Digite o Título da Atividade:" required>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-light text-dark">
+                <div class="modal-header">
+                    <img id="logo_estrela" src="./img/logo_gnosis.png" alt="logo_gnosis">
+                    <h5 class="modal-title ms-2" id="exampleModalLabel">Gnosis - Cadastrar Atividade</h5>
+                    <button type="button" class="btn-close btn-close-black" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="form_cadastrar_atividade">
+                        <section class="m-2 mb-3">                      
+                            <div class="input-group-custom">
+                                <i class="fa-solid fa-list-check icon-input"></i>
+                                <input name="titulo_cadastrar_atividade" class="form-control custom-input bg-secondary bg-opacity-10" type="text" placeholder="Digite o Título da Atividade:" required>
+                            </div>
+                        </section>
+                        <section class="m-2 mb-3">                      
+                            <div class="input-group-custom">
+                                <i class="fa-solid fa-file-alt icon-input"></i>
+                                <input name="descricao_cadastrar_atividade" class="form-control custom-input bg-secondary bg-opacity-10" type="text" placeholder="Digite a Descrição da Atividade:">
+                            </div>
+                        </section>
+                        
+                        <section class="m-2 mb-3">                      
+                            <div class="d-flex gap-2 align-items-center">
+                                <div class="input-group-custom flex-grow-1">
+                                    <select class="form-select custom-input bg-secondary bg-opacity-10" name="materia_cadastrar_atividade" id="select_materia_atividade" required>
+                                        <option value="" selected disabled>Escolha uma matéria</option>
+                                        </select>
                                 </div>
-                            </section>
-                            <section class="m-2 mb-3">                       
-                                <div class="input-group-custom">
-                                    <i class="fa-solid fa-file-alt icon-input"></i>
-                                    <input name="descricao_cadastrar_atividade" class="form-control custom-input bg-secondary bg-opacity-10" type="text" placeholder="Digite a Descrição da Atividade:">
-                                </div>
-                            </section>
-                            <section class="m-2 mb-3">                       
-                                <div class="input-group-custom">
-                                    <select class="form-select custom-input bg-secondary bg-opacity-10" name="materia_cadastrar_atividade">
-                                        <option selected value="0">Escolha uma matéria</option>
-                                        <!-- FAZER UMA REQUISIÇÃO DO TIPO GET PARA PEGAR TODAS AS MATERIAS CADASTRADAS -->
-                                    </select>
-                                </div>
-                            </section>
-                            <section class="m-2 mb-3">                       
-                                <div class="input-group-custom">
-                                    <i class="fa-solid fa-hourglass-half icon-input"></i>
-                                    <input name="prazo_cadastrar_atividade" class="form-control custom-input bg-secondary bg-opacity-10" type="number" placeholder="Digite o prazo da Atividade:" required>
-                                </div>
-                            </section>
-                            <!-- CASO O USUÁRIO CLICA NA DATA, ESSE CAMPO DEVE VIR COMO DESABILITADO E COM A DATA PREENCHIDA POR AQUELA QUE O USUÁRIO ESCOLHEU -->
-                             <section class="m-2 mb-3">                       
-                                <div class="input-group-custom">
-                                    <i class="fa-regular fa-calendar icon-input"></i>
-                                    <input name="data_cadastrar_atividade" class="form-control custom-input bg-secondary bg-opacity-10" type="date" placeholder="Escolha uma data:" required>
-                                </div>
-                            </section>
-                            <div class="d-grid mt-2">
-                                <button type="button" class="btn text-light BOTAO_DOURADO">
-                                    <strong class="me-1">Cadastrar Atividade</strong>
+                                <button type="button" class="btn text-light BOTAO_DOURADO d-flex align-items-center justify-content-center" data-bs-toggle="modal" data-bs-target="#cadastrar_materia" style="height: 48px; width: 48px; padding: 0; border-radius: 8px;">
+                                    <i class="fa-solid fa-plus"></i>
                                 </button>
                             </div>
-                        </form>
-                    </div>                    
-                </div>
+                        </section>
+
+                        <section class="m-2 mb-3">                      
+                            <div class="input-group-custom">
+                                <i class="fa-solid fa-hourglass-half icon-input"></i>
+                                <input name="prazo_cadastrar_atividade" class="form-control custom-input bg-secondary bg-opacity-10" type="number" placeholder="Digite o prazo da Atividade (em dias):" required>
+                            </div>
+                        </section>
+                         <section class="m-2 mb-3">                      
+                            <div class="input-group-custom">
+                                <i class="fa-regular fa-calendar icon-input"></i>
+                                <input name="data_cadastrar_atividade" class="form-control custom-input bg-secondary bg-opacity-10" type="date" required>
+                            </div>
+                        </section>
+                        <div class="d-grid mt-2">
+                            <button type="submit" class="btn text-light BOTAO_DOURADO">
+                                <strong class="me-1">Cadastrar Atividade</strong>
+                            </button>
+                        </div>
+                    </form>
+                </div>                    
             </div>
         </div>
+    </div>
+
+    <div class="modal fade" id="cadastrar_materia" tabindex="-1" aria-labelledby="materiaModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-light text-dark">
+                <div class="modal-header">
+                    <img id="logo_estrela" src="./img/logo_gnosis.png" alt="logo_gnosis">
+                    <h5 class="modal-title ms-2" id="materiaModalLabel">Gnosis - Nova Matéria</h5>
+                    <button type="button" class="btn-close btn-close-black" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="form_cadastrar_materia">
+                        <section class="m-2 mb-3">                      
+                            <div class="input-group-custom">
+                                <i class="fa-solid fa-book icon-input"></i>
+                                <input name="nome_materia" id="nome_materia" class="form-control custom-input bg-secondary bg-opacity-10" type="text" placeholder="Nome da Disciplina (Ex: Cálculo I):" required>
+                            </div>
+                        </section>
+                        <section class="m-2 mb-3">                      
+                            <label class="form-label ms-1 text-secondary" style="font-size: 0.9em;">Cor da Estrela na Constelação:</label>
+                            <div class="input-group-custom">
+                                <i class="fa-solid fa-palette icon-input"></i>
+                                <input name="cor_materia" id="cor_materia" class="form-control custom-input bg-secondary bg-opacity-10" type="color" value="#32A3B1">
+                            </div>
+                        </section>
+                        <div class="d-grid mt-2">
+                            <button type="submit" id="btnSalvarMateria" class="btn text-light BOTAO_DOURADO">
+                                <strong class="me-1">Salvar Matéria</strong>
+                            </button>
+                        </div>
+                    </form>
+                </div>                    
+            </div>
+        </div>
+    </div>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

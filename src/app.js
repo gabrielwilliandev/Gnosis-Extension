@@ -2,6 +2,7 @@ const express = require('express');
 const mustacheExpress = require('mustache-express');
 const path = require('path')
 const cors = require('cors')
+const cookieParser = require('cookie-parser');
 
 const usuarioRoutes = require('./routes/usuarioRoutes');
 const tarefaRoutes = require('./routes/tarefaRoutes')
@@ -11,6 +12,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 
 
 // Ligação com o front end

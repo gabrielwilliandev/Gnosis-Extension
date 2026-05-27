@@ -23,7 +23,8 @@
   "permissions": [
     "notifications",
     "storage",
-    "alarms"
+    "alarms",
+    "cookies"
   ],
   "host_permissions": [
     "http://localhost:3000/*" 

@@ -18,13 +18,17 @@ function getKey(header, callback) {
 }
 
 module.exports = (req, res, next) => {
-    const authHeader = req.headers.authorization;
+    // Tenta buscar o token no cookie (Web App)
+    let token = req.cookies?.gnosis_token;
 
-    if (!authHeader?.startsWith('Bearer ')) {
-        return res.status(401).json({ message: 'Token ausente' });
+    // Se não tiver cookie, tenta pelo header (Extensão do Chrome)
+    if (!token && req.headers.authorization?.startsWith('Bearer ')) {
+        token = req.headers.authorization.replace('Bearer ', '').trim();
     }
 
-    const token = authHeader.replace('Bearer ', '').trim();
+    if (!token) {
+        return res.status(401).json({ message: 'Token ausente ou expirado' });
+    }
 
     jwt.verify(token, getKey, {
         algorithms: ['ES256'],
