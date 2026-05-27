@@ -64,6 +64,19 @@ class TarefaController {
             success(tarefaSelecionada, 'Tarefa encontrada com sucesso')
         );
     });
+    static deletar = asyncHandler(async (req, res) => {
+        const { id } = req.params;
+
+        await TarefaService.deletar(id);
+
+        return res.status(200).json(
+        success(null, "Tarefa deletada com sucesso!")
+
+        );
+    });
+    
 }
+
+
 
 module.exports = TarefaController;

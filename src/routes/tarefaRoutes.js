@@ -18,4 +18,6 @@ router.put('/activities/:id', TarefaController.atualizar);
 
 router.get('/usuario/:user_id/:tarefaId',TarefaController.listarTarefaSelecionada);
 
+router.delete('/activities/:id', TarefaController.deletar);
+
 module.exports = router;

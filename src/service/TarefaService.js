@@ -74,6 +74,13 @@ class TarefaService {
 
         return await TarefaRepository.buscarSelecionadaPorUsuario(userId, tarefaId);
     }
+    static async deletar(id) {
+    if (!id) {
+        throw new Error('ID da tarefa é obrigatório');
+    }
+
+    return await TarefaRepository.deletar(id);
+}
 }
 
 module.exports = TarefaService;
