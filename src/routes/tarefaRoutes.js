@@ -10,7 +10,7 @@ router.use(authHandler); // Aplica o middleware de autenticação a todas as rot
 router.post('/', TarefaController.cadastrar);
 
 // Rota para listar todas as tarefas de um usuário específico
-router.get('/usuario/:user_id', TarefaController.listar);
+router.get('/usuario/:user_id/:ano_mes', TarefaController.listar);
 // para extensão, serve para buscar as pentendes
 router.get('/usuario/:user_id/pendentes', TarefaController.listarPendentes);
 // para atualizar tarefas
