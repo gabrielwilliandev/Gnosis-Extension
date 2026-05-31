@@ -75,7 +75,7 @@
                     class="campo-pesquisa-atividade"
                 >
 
-                <button type="button" class="btn-add-atividade" onclick="cadastrar_atividade('');" data-bs-toggle="modal">
+                <button type="button" class="btn-add-atividade" onclick="exibir_cadastrar_atividade('');" data-bs-toggle="modal">
                     + Nova Atividade
                 </button>
 
@@ -126,20 +126,20 @@
                         <section class="m-2 mb-3">                      
                             <div class="input-group-custom">
                                 <i class="fa-solid fa-list-check icon-input"></i>
-                                <input name="titulo_cadastrar_atividade" class="form-control custom-input bg-secondary bg-opacity-10" type="text" placeholder="Digite o Título da Atividade:" required>
+                                <input id="titulo_cadastrar_atividade" name="titulo_cadastrar_atividade" class="form-control custom-input bg-secondary bg-opacity-10" type="text" placeholder="Digite o Título da Atividade:" required>
                             </div>
                         </section>
                         <section class="m-2 mb-3">                      
                             <div class="input-group-custom">
                                 <i class="fa-solid fa-file-alt icon-input"></i>
-                                <input name="descricao_cadastrar_atividade" class="form-control custom-input bg-secondary bg-opacity-10" type="text" placeholder="Digite a Descrição da Atividade:">
+                                <input id="descricao_cadastrar_atividade" name="descricao_cadastrar_atividade" class="form-control custom-input bg-secondary bg-opacity-10" type="text" placeholder="Digite a Descrição da Atividade:">
                             </div>
                         </section>
                         
                         <section class="m-2 mb-3">                      
                             <div class="d-flex gap-2 align-items-center">
                                 <div class="input-group-custom flex-grow-1">
-                                    <select class="form-select custom-input bg-secondary bg-opacity-10" name="materia_cadastrar_atividade" id="select_materia_atividade" required>
+                                    <select class="form-select custom-input bg-secondary bg-opacity-10" name="idMaterias_cadastrar_atividade" id="idMaterias_cadastrar_atividade" required>
                                         <option value="" selected disabled>Escolha uma matéria</option>
                                         </select>
                                 </div>
@@ -151,18 +151,18 @@
 
                         <section class="m-2 mb-3">                      
                             <div class="input-group-custom">
-                                <i class="fa-solid fa-hourglass-half icon-input"></i>
-                                <input name="prazo_cadastrar_atividade" class="form-control custom-input bg-secondary bg-opacity-10" type="number" placeholder="Digite o prazo da Atividade (em dias):" required>
+                                <i class="fa fa-clock icon-input"></i>
+                                <input name="hora_vencimento_cadastrar_atividade" id="hora_vencimento_cadastrar_atividade" class="form-control custom-input bg-secondary bg-opacity-10" type="time" placeholder="Digite o horário de vencimento:" required>
                             </div>
                         </section>
                          <section class="m-2 mb-3">                      
                             <div class="input-group-custom">
                                 <i class="fa-regular fa-calendar icon-input"></i>
-                                <input name="data_cadastrar_atividade" id="data_cadastrar_atividade" class="form-control custom-input bg-secondary bg-opacity-10" type="date" required>
+                                <input name="data_vencimento_cadastrar_atividade" id="data_vencimento_cadastrar_atividade" class="form-control custom-input bg-secondary bg-opacity-10" type="date" required>
                             </div>
                         </section>
                         <div class="d-grid mt-2">
-                            <button type="submit" class="btn text-light BOTAO_DOURADO">
+                            <button type="submit" id="btn_cadastrar_atividade" class="btn text-light BOTAO_DOURADO">
                                 <strong class="me-1">Cadastrar Atividade</strong>
                             </button>
                         </div>

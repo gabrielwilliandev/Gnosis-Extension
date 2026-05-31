@@ -14,9 +14,9 @@ class TarefaEntitie {
     this.titulo = titulo;
     this.descricao = descricao;
     this.data_inicio = data_inicio || new Date();
-    this.data_vencimento = data_vencimento;
+    this.data_vencimento = data_vencimento; // Datetime
     this.hora_vencimento = hora_vencimento;
-    this.status = 'Pendente';
+    this.status = 'Pendente'; // Criar um  eNum - GABRIEL
     this.idUsuario = idUsuario;
     this.idsMaterias = idMaterias;
     this.data_cadastro = new Date();

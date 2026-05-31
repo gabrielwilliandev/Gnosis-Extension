@@ -13,7 +13,9 @@ class TarefaController {
 
     static listar = asyncHandler(async (req, res) => {
         const { user_id } = req.params;
-        const tarefas = await TarefaService.listarPorUsuario(user_id);
+        const ano_mes = req.params.ano_mes || 'TODOS';
+        
+        const tarefas = await TarefaService.listarPorUsuario(user_id, ano_mes);
 
         if (!tarefas || tarefas.length === 0) {
             return res.status(200).json(

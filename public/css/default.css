@@ -395,6 +395,21 @@ body {
 
     padding:10px;
 }
+
+[id^="qtd_tarefas_"] {
+    display: inline-block;
+    float: right;
+    background-color: #6c63ff; /* roxo como na imagem do dia 23 */
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 11px;
+    text-align: center;
+    line-height: 18px;
+    margin-left: 4px;
+}
+
 .task-card{
     border-radius:16px;
     padding:14px;

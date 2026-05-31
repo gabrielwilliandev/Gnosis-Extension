@@ -13,14 +13,16 @@ class TarefaService {
         return tarefaSalva;
     }
 
-    static async listarPorUsuario(userId) {
+    static async listarPorUsuario(userId, ano_mes) {
         if (!userId) {
             throw new ValidationError('Falha ao listar tarefas.', [
                 { field: 'user_id', message: 'O ID do usuario e obrigatorio para listar as tarefas.' }
             ]);
         }
-
-        return await TarefaRepository.buscarPorUsuario(userId);
+        if(!ano_mes){
+            ano_mes = 'TODOS';
+        }
+        return await TarefaRepository.buscarPorUsuario(userId, ano_mes);
     }
 
     static async listarPendentes(userId) {
