@@ -30,9 +30,24 @@ class MateriaRepository {
         if (error) {
             throw new AppError(error.message, 400, 'SUBJECT_FETCH_ERROR');
         }
+               return data;
+    }
 
-        return data;
+    static async buscarPorNome(nome) {
+        const { data, error } = await supabase
+            .from('materias')
+            .select('*')
+            .eq('nome', nome);
+
+        if (error) {
+            throw new AppError(error.message, 400, 'SUBJECT_FETCH_ERROR');
+        }
+
+    
+        return data; 
     }
 }
+
+ 
 
 module.exports = MateriaRepository;
