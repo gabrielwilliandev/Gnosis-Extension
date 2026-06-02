@@ -4,13 +4,16 @@ const supabase = require('../config/supabase');
 const AppError = require('../errors/AppError');
 const ValidationError = require('../errors/ValidationError');
 const Notification = require('../utils/Notification');
+const Validar = require('../validate/ValidateTarefa.js')
 
 class TarefaService {
     static async cadastrar(dadosTarefa) {
-        const novaTarefa = new TarefaEntitie(dadosTarefa);
+        if (Validar.validartarefa(dadosTarefa)){
+        const novaTarefa = new TarefaEntitie(dadosTarefa)
         const tarefaSalva = await TarefaRepository.salvar(novaTarefa);
-
         return tarefaSalva;
+        }
+        
     }
 
     static async listarPorUsuario(userId, ano_mes) {

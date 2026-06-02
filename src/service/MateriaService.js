@@ -1,11 +1,16 @@
 const MateriaEntitie = require('../entities/MateriaEntitie');
 const MateriaRepository = require('../repositories/MateriaRepository.js');
 const ValidationError = require('../errors/ValidationError');
+const ValidarMateria =  require('../validate/ValidateMateria.js');
 
 class MateriaService {
     static async cadastrar(dadosMateria) {
+        if(await ValidarMateria.validarmateria(dadosMateria)) { 
         const novaMateria = new MateriaEntitie(dadosMateria);
         return await MateriaRepository.salvar(novaMateria);
+
+        }
+        
     }
     static async deletar(idMateria) {
         if (!idMateria) {
