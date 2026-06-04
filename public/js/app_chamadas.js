@@ -381,15 +381,15 @@ function listar_atividades(mes_ano){
                         texto_cor = '#856404';
                     }              
                     
-                    let hora = t.hora_vencimento.replace(/:/g, '-');
-                    let idTarefa = `tarefa_${t.data_vencimento}_${hora}`; // tarefa_2026-01-01_12-30               
+                    let hora = t.hora_vencimento.replace(/:/g, '-'); // tarefa_2026-06-26T00:00:00_19-39-00
+                    let idTarefa = `tarefa_${data_vencimento}_${hora}`; // tarefa_2026-01-01_12-30               
 
                     // INSTANCIANDO O OBJETO
                     if(!tarefasPorDia[data_vencimento]){
                         tarefasPorDia[data_vencimento] = {}
                     }
 
-                    tarefasPorDia[data_vencimento][idTarefa] = {
+                    tarefasPorDia[data_vencimento][t.id] = {
                         titulo: t.titulo,
                         background_cor: cor,
                         cor_texto: texto_cor
@@ -398,22 +398,7 @@ function listar_atividades(mes_ano){
                     // VERIFICANDO QUANTAS ATIVIDADES TEM NO DIA
                     let qtd = Object.keys(tarefasPorDia[data_vencimento]).length;
                     if (qtd <= 2){ 
-                        td_dia.append(`
-                            <span class="atividades_${data_vencimento}"  style="
-                            display: block;
-                            width: calc(100% - 8px);
-                            margin: 2px 4px;
-                            padding: 3px 6px;
-                            border-radius: 6px;
-                            background-color: ${cor};
-                            color: ${texto_cor};
-                            font-size: 12px;
-                            font-weight: 500;
-                            white-space: nowrap;
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                            cursor: pointer;
-                        " >${t.titulo}</span>`);
+                        td_dia.append(`<span class="atividades_${data_vencimento}" onclick="exibir_atividade(event, ${t.id});"  style="z-index: 1; display: block;width: calc(100% - 8px);margin: 2px 4px;padding: 3px 6px;border-radius: 6px;background-color: ${cor};color: ${texto_cor};font-size: 12px;font-weight: 500;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;cursor: pointer;" >${t.titulo}</span>`);
                     }
                     // Exibindo a quantidade de tarefas por dia
                     const campo_qtd_tarefas_dias = document.getElementById(`qtd_tarefas_${data_vencimento}`);
@@ -427,6 +412,43 @@ function listar_atividades(mes_ano){
         }
     })
     .catch(err => console.error('Erro de rede ao buscar matérias:', err));
+}
+// lucas
+function exibir_atividade(event, tarefa_id){
+    // EXIBIR A MODAL DA ATIVIDADE
+    event.stopPropagation(); // Serve para não exutar a função do td, que esta englobando a ficha de atividade
+
+    // PRECISO BUSCAR OS DADOS DA ATIVIDADE E PREENCHER OS CAMPOS
+    const cookieDados = obterCookie('gnosis_user');
+    if (!cookieDados) {
+        console.warn('Sessão ou dados do usuário indisponíveis para listar atividades.');
+        return;
+    }
+    let usuario = [];
+    try {
+        usuario = JSON.parse(cookieDados); // Pegando os dados do usuário pelo cookie
+    } catch(e){
+        return; // Se não conseguir pegar os dados do usário, cancela a requisição
+    } fetch(`${API_BASE_URL}/tarefas/usuario/tarefaSelecionada/${usuario.id}/${tarefa_id}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(res => res.json())
+    .then(response => {
+        if (response.success) {
+            const modal = new bootstrap.Modal('#editar_atividade');    
+            modal.show();
+        } else {
+
+        }
+    });
+
+
+
+    
 }
 // =========================================================================================================
 //                                             CONTROLE DE DADOS - HOME

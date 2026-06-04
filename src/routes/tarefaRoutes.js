@@ -16,7 +16,7 @@ router.get('/usuario/:user_id/pendentes', TarefaController.listarPendentes);
 // para atualizar tarefas
 router.put('/activities/:id', TarefaController.atualizar);
 
-router.get('/usuario/:user_id/:tarefaId',TarefaController.listarTarefaSelecionada);
+router.get('/usuario/tarefaSelecionada/:user_id/:tarefaId',TarefaController.listarTarefaSelecionada);
 
 router.delete('/activities/:id', TarefaController.deletar);
 
