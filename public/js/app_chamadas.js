@@ -28,6 +28,7 @@ const API_BASE_URL = 'http://localhost:3000/api';
 
 // --- INICIALIZAÇÃO DO SISTEMA ---
 document.addEventListener('DOMContentLoaded', () => {
+    cadastrarUsuario();
     inicializarLogin();
     gerarIconUser();
     carregarMaterias();
@@ -154,6 +155,50 @@ function inicializarLogout() {
         }
     });
 }
+
+//--- CONTROLE DE CADASTRO ---
+function cadastrarUsuario(){
+    const form = document.getElementById('form_cadastroUsuario');
+    if (!form) return;
+
+    const nomeUsuario = document.querySelector('input[name="cadastrar_nome"]');
+    const emailUsuario = document.querySelector('input[name="cadastrar_email"]');
+    const senhaUsuario = document.getElementById('cadastrar_senha');
+    const confirmacaoSenhaUsuario = document.getElementById('cadastrar_confirmar');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const nome = nomeUsuario.value.trim();
+        const email = emailUsuario.value.trim();
+        const senha = senhaUsuario.value.trim();
+        const confirmarSenha = confirmacaoSenhaUsuario.value.trim();
+
+
+        try {
+                const response = await fetch(`${API_BASE_URL}/cadastrar`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({nome, email, cadastrar_senha: senha,cadastrar_confirmar: confirmarSenha})
+                });
+
+                const data = await response.json();
+                console.log(data)
+                if (!response.ok) throw new Error(data.errors?.[0]?.message || data.message || "Credenciais inválidas");
+
+                alert('Cadastro realizado com sucesso!');
+                window.location.href = '/';
+
+            } catch (error) {
+                alert(error.message);
+                console.error('Erro no cadastro: ', error);
+            }
+    
+    });
+    
+}
+
 
 // =========================================================================================================
 //                                             CALENDÁRIO

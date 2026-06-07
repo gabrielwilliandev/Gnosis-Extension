@@ -2,13 +2,17 @@ const UsuarioEntite = require('../entities/UsuarioEntitie');
 const UsuarioRepository = require('../repositories/UsuarioRepository.js');
 const ValidationError = require('../errors/ValidationError');
 const Notification = require('../utils/Notification');
+const Validar = require('../validate/ValidateCadastroUsuario.js')
 
 class UsuarioService {
     static async cadastrar(dadosUsuario) {
-        const novoUsuario = new UsuarioEntite(dadosUsuario);
-        const usuarioSalvo = await UsuarioRepository.salvar(novoUsuario);
+        if(Validar.validarCadastro(dadosUsuario)){
+            const novoUsuario = new UsuarioEntite(dadosUsuario);
+            const usuarioSalvo = await UsuarioRepository.salvar(novoUsuario);
 
-        return usuarioSalvo;
+            return usuarioSalvo;
+        }
+        
     }
 
     static async buscarPerfil(email) {
