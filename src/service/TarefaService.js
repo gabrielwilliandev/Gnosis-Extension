@@ -45,11 +45,47 @@ class TarefaService {
             ]);
         }
 
+        const {
+            idMaterias,
+            ...dadosTarefa
+        } = dados;
+
         const { data, error } = await supabase
             .from('tarefas')
-            .update(dados)
+            .update(dadosTarefa)
             .eq('id', id)
             .select();
+
+        // TABELA DE RELACIONAMENTO 
+        const { error: deleteError } = await supabase
+            .from('tarefas_materias')
+            .delete()
+            .eq('tarefa_id', id);
+
+        if (deleteError) {
+            throw new AppError(
+                deleteError.message,
+                400,
+                'TASK_MATERIAS_DELETE_ERROR'
+            );
+        }
+
+        const { error: insertError } = await supabase
+            .from('tarefas_materias')
+            .insert(
+                idMaterias.map(materiaId => ({
+                    tarefa_id: id,
+                    materia_id: materiaId
+                }))
+            );
+
+        if (insertError) {
+            throw new AppError(
+                insertError.message,
+                400,
+                'TASK_MATERIAS_INSERT_ERROR'
+            );
+        }
 
         if (error) {
             throw new AppError(error.message, 400, 'TASK_UPDATE_ERROR');

@@ -45,12 +45,15 @@ class TarefaController {
 
     static atualizar = asyncHandler(async (req, res) => {
         const { id } = req.params;
-        const { titulo, descricao, status } = req.body;
+        const { titulo, descricao, status, idMaterias, hora_vencimento, data_vencimento} = req.body;
 
         const tarefaAtualizada = await TarefaService.atualizar(id, {
             titulo,
             descricao,
-            status
+            status,
+            data_vencimento, 
+            hora_vencimento, 
+            idMaterias
         });
 
         return res.status(200).json(
