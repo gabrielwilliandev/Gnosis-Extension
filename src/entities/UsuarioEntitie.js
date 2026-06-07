@@ -2,10 +2,10 @@ const ValidationError = require('../errors/ValidationError');
 const Notification = require('../utils/Notification');
 
 class UsuarioEntitie {
-    constructor({ nome, email, senha }) {
+    constructor({ nome, email, cadastrar_senha }) {
         this.nome = nome;
         this.email = email;
-        this.senha = senha;
+        this.senha = cadastrar_senha;
         this.data_cadastro = new Date();
 
         this.validar();
