@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     inicializarFormularios();
     inicializarLogout();
     cadastrar_atividade();
+    editar_atividade();
     
     if (document.getElementById('dias-calendario')) {
         montarCalendario(mesAtual, anoAtual);
@@ -271,7 +272,7 @@ function montarCalendario(mes, ano) {
 }
 
 // =========================================================================================================
-//                                             ATIVIDADE
+//                                             ATIVIDADE - CADASTRAR
 // =========================================================================================================
  
 // PARA EXIBIR A DATA NO CAMPO - CADASTRAR ATIVIDADE
@@ -302,8 +303,10 @@ function cadastrar_atividade(){
     const formAtividade = document.getElementById('form_cadastrar_atividade');    
       
     // PRECISA FAZER A VERIFICAÇÃO DOS CAMPOS EM BRANCO
-    formAtividade.addEventListener('submit', async (e) => { 
-        const modal = new bootstrap.Modal('#cadastrar_atividade');            
+    formAtividade.addEventListener('submit', async (e) => {         
+        const modalElement = document.getElementById('cadastrar_atividade');
+        const modal = new bootstrap.Modal(modalElement);
+                   
         e.preventDefault(); // Não carregar a página
         const cookieDados = obterCookie('gnosis_user');
         
@@ -330,7 +333,7 @@ function cadastrar_atividade(){
         };                 
 
         try{        
-            const res = await fetch(`${API_BASE_URL}/tarefas`, {                
+            const res = await fetch(`${API_BASE_URL}/tarefas/`, {                
                 method: 'POST',
                 credentials: 'include',
                 headers: {
@@ -439,11 +442,14 @@ function listar_atividades(mes_ano){
                         background_cor: cor,
                         cor_texto: texto_cor
                     }
-
                     // VERIFICANDO QUANTAS ATIVIDADES TEM NO DIA
                     let qtd = Object.keys(tarefasPorDia[data_vencimento]).length;
+
+                    // PRECISA VERIFICAR SE A ATIVIDADE É DO PASSADO                    
+                    const evento = diferencaDias >= 0 ? `onclick="exibir_atividade(event, ${t.id});` : '';
+
                     if (qtd <= 2){ 
-                        td_dia.append(`<span class="atividades_${data_vencimento}" onclick="exibir_atividade(event, ${t.id});"  style="z-index: 1; display: block;width: calc(100% - 8px);margin: 2px 4px;padding: 3px 6px;border-radius: 6px;background-color: ${cor};color: ${texto_cor};font-size: 12px;font-weight: 500;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;cursor: pointer;" >${t.titulo}</span>`);
+                        td_dia.append(`<span class="atividades_${data_vencimento}" ${evento}"  style="z-index: 1; display: block;width: calc(100% - 8px);margin: 2px 4px;padding: 3px 6px;border-radius: 6px;background-color: ${cor};color: ${texto_cor};font-size: 12px;font-weight: 500;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;cursor: pointer;" >${t.titulo}</span>`);
                     }
                     // Exibindo a quantidade de tarefas por dia
                     const campo_qtd_tarefas_dias = document.getElementById(`qtd_tarefas_${data_vencimento}`);
@@ -458,7 +464,11 @@ function listar_atividades(mes_ano){
     })
     .catch(err => console.error('Erro de rede ao buscar matérias:', err));
 }
-// lucas
+
+// =========================================================================================================
+//                                             ATIVIDADE - EDITAR
+// =========================================================================================================
+
 function exibir_atividade(event, tarefa_id){
     // EXIBIR A MODAL DA ATIVIDADE
     event.stopPropagation(); // Serve para não exutar a função do td, que esta englobando a ficha de atividade
@@ -484,17 +494,130 @@ function exibir_atividade(event, tarefa_id){
     .then(res => res.json())
     .then(response => {
         if (response.success) {
-            const modal = new bootstrap.Modal('#editar_atividade');    
+            const modalElement = document.getElementById('editar_atividade');
+            const modal = new bootstrap.Modal(modalElement);    
             modal.show();
-        } else {
 
+            const atv = response.data[0];
+            console.log(atv);
+            $('#titulo_editar_atividade').val(atv.titulo);
+            $('#descricao_editar_atividade').val(atv.descricao);
+            $('#hora_vencimento_editar_atividade').val(atv.hora_vencimento);
+            const dataF = atv.data_vencimento.split('T')[0];
+            $('#data_vencimento_editar_atividade').val(dataF);
+            $('#idAtividade').val(atv.id);
+            $(`input[name="status_editar_atividade"][value="${atv.status}"]`).prop('checked', true);
+
+            // ANTES DE SELECIONAR A MATERIA, PRECISO POPULAR O SELECT            
+            fetch(`${API_BASE_URL}/materias/usuario/${usuario.id}`, {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(response => {
+                if (response.success) {
+                    const materias = response.data || [];
+                    const select = $('#idMaterias_editar_atividade');   
+                    select.html('<option value="" selected disabled>Escolha uma matéria</option>');
+                    materias.forEach(materia => {
+                        select.append(
+                            `<option value="${materia.id}">
+                                ${materia.nome} 
+                            </option>`
+                        );                        
+                    });
+                    select.val(atv.materias[0].id);
+                } else {
+                    console.error('Erro mapeado pelo servidor:', response.message);
+                }
+            })
+            .catch(err => console.error('Erro de rede ao buscar matérias:', err));
+        } else {
+            console.error('Erro mapeado pelo servidor:', response.message);
+        }
+    }).catch(err => console.error('Erro de rede ao buscar atividade:', err));
+
+}
+
+function editar_atividade(){
+    const formAtividade = document.getElementById('form_editar_atividade');    
+      
+    // PRECISA FAZER A VERIFICAÇÃO DOS CAMPOS EM BRANCO
+    formAtividade.addEventListener('submit', async (e) => { 
+        const modal = bootstrap.Modal.getInstance(
+                document.getElementById('editar_atividade')
+            );       
+        e.preventDefault(); // Não carregar a página
+        const cookieDados = obterCookie('gnosis_user');
+        
+        if(!cookieDados){        
+            alert('Dados do usuário não encontrados. Faça login novamente.');
+            return;
+        }
+        let usuario = [];
+        try {
+            usuario = JSON.parse(cookieDados); // Pegando os dados do usuário pelo cookie
+        } catch(e){
+            return; // Se não conseguir pegar os dados do usário, cancela a requisição
+        }
+        
+        const materia = parseInt($('#idMaterias_editar_atividade').val());
+        
+        // Recuperando dados do formulario
+        const dados = {
+            id: $('#idAtividade').val(),
+            titulo: $('#titulo_editar_atividade').val(),
+            descricao: $('#descricao_editar_atividade').val(),
+            data_vencimento: $('#data_vencimento_editar_atividade').val(),
+            hora_vencimento: $('#hora_vencimento_editar_atividade').val(),
+            status: $('input[name="status_editar_atividade"]:checked').val(),
+            idUsuario: usuario.id,
+            idMaterias: [materia]
+        };                 
+
+        try{        
+            // http://localhost:3000/api/activities/11
+            const res = await fetch(`${API_BASE_URL}/tarefas/activities/${dados.id}`, {                
+                method: 'PUT',
+                credentials: 'include',
+                headers: {
+                    'Content-type': 'application/json'
+                },
+                body: JSON.stringify(dados)
+            });
+            const response = await res.json();
+            
+            if (response.success) {
+                alert(response.message);
+                formAtividade.reset();                
+                
+                // ATUALIZA O CALENDÁRIO
+                const mes_ano = $('#mes-ano').html(); // pegando o conteudo do html
+                const [mesTexto, ano] = mes_ano.split(' '); // quebrando a string para array
+                const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+                const index = meses.indexOf(mesTexto);
+                let mes;
+                if(index !== -1){
+                    mes = index;
+                } else {
+                    mes = 0;
+                }
+                montarCalendario(mes, ano);
+                modal.hide();
+            } else {
+                alert(`Erro: ${response.message}`);
+            }
+        } catch (err) {
+            console.error('Erro ao editar atividade:', err);
+            alert('Erro na comunicação com o servidor.');
         }
     });
 
-
-
-    
 }
+
 // =========================================================================================================
 //                                             CONTROLE DE DADOS - HOME
 // =========================================================================================================
@@ -598,7 +721,7 @@ function inicializarFormularios() {
 
         const dadosMateria = {
             nome: document.getElementById('nome_materia').value.trim(),
-            cor: document.getElementById('cor_materia').value,
+            //cor: document.getElementById('cor_materia').value,
             idUsuario: usuario.id
         };
 
@@ -626,7 +749,8 @@ function inicializarFormularios() {
 
                 const modalElement = document.getElementById('cadastrar_materia');
                 if (modalElement) {
-                    const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                    const modalInstance = new bootstrap.Modal('#cadastrar_materia');
+                    //const modalInstance = bootstrap.Modal.getInstance(modalElement);
                     if (modalInstance) modalInstance.hide();
                 }
 
