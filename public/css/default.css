@@ -394,6 +394,7 @@ body {
     vertical-align:top;
 
     padding:10px;
+    position:relative;
 }
 
 [id^="qtd_tarefas_"] {
@@ -408,6 +409,70 @@ body {
     text-align: center;
     line-height: 18px;
     margin-left: 4px;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+}
+
+.atividades-dia-expansao{
+    position:absolute;
+    top:34px;
+    right:8px;
+    left:8px;
+    z-index:20;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    max-height:180px;
+    overflow:auto;
+    padding:8px;
+    border:1px solid #ddd7ff;
+    border-radius:8px;
+    background:white;
+    box-shadow:0 8px 24px rgba(13, 42, 58, 0.18);
+}
+
+.atividade-expansao-item{
+    width:100%;
+    border:1px solid #ececec;
+    border-left:4px solid #6c63ff;
+    border-radius:6px;
+    background:#f8f9fa;
+    padding:8px;
+    text-align:left;
+    cursor:pointer;
+}
+
+.atividade-expansao-item:hover{
+    background:#eef0ff;
+}
+
+.atividade-expansao-topo{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:8px;
+    font-size:12px;
+}
+
+.atividade-expansao-topo strong{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.atividade-expansao-descricao,
+.atividade-expansao-meta{
+    display:block;
+    margin-top:4px;
+    color:#6b7280;
+    font-size:11px;
+}
+
+.atividade-expansao-meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
 }
 
 .task-card{
