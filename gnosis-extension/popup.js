@@ -199,7 +199,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function alterarStatusTarefa(id, titulo, descricao, statusAtual) {
-        const novoStatus = normalizarStatus(statusAtual) === 'feita' ? 'pendente' : 'feita';
+        // Transita entre os status oficiais que o backend espera ("Finalizada" e "Pendente")
+        const novoStatus = normalizarStatus(statusAtual) === 'feita' ? 'Pendente' : 'Finalizada';
 
         // Puxa o token de forma assíncrona do storage da extensão
         chrome.storage.local.get(['gnosis_token'], async (resultado) => {
@@ -240,7 +241,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function aplicarFiltros(lista) {
         return lista.filter((t) => {
-            const statusNormalizado = normalizarStatus(t.status);
+            const dataStr = t.data_vencimento || t.data_entrega || t.dataEntrega || t.data;
+            const statusNormalizado = normalizarStatus(t.status, dataStr);
 
             // 1. Filtro por Aba Superior
             const passaFiltroAba =
@@ -283,8 +285,9 @@ document.addEventListener('DOMContentLoaded', () => {
             // 4. Filtro por Caixa de Texto (Busca livre)
             if (!termoBusca) return true;
 
-            const materiaTexto = Array.isArray(t.materias)
-                ? t.materias.map((materia) => materia?.nome).filter(Boolean).join(' ')
+            const materiasArray = t.materias || t.tarefas_materias || [];
+            const materiaTexto = Array.isArray(materiasArray)
+                ? materiasArray.map((m) => m?.nome || m?.materia?.nome).filter(Boolean).join(' ')
                 : '';
 
             const texto = [
@@ -302,12 +305,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function normalizarStatus(status) {
-        if (!status) return 'pendente';
+    function normalizarStatus(status, data_vencimento) {
+        if (!status) status = 'pendente';
         const s = String(status).toLowerCase().trim();
-        if (['feita', 'feito', 'concluida', 'concluída', 'done', 'completed'].includes(s)) return 'feita';
-        if (['nao-feita', 'não feita', 'nao feita', 'nao_feita', 'não_feita', 'incompleta', 'cancelada'].includes(s)) return 'nao-feita';
-        return 'pendente';
+        let statusNorm = 'pendente';
+
+        if (['feita', 'feito', 'concluida', 'concluída', 'done', 'completed', 'finalizada'].includes(s)) {
+            statusNorm = 'feita';
+        } else if (['nao-feita', 'não feita', 'nao feita', 'nao_feita', 'não_feita', 'incompleta', 'cancelada'].includes(s)) {
+            statusNorm = 'nao-feita';
+        }
+
+        // Se a tarefa não foi finalizada e já passou do prazo, marca como "Não feita" (atrasada)
+        if (statusNorm === 'pendente' && data_vencimento) {
+            const dataTarefa = new Date(data_vencimento);
+            if (!Number.isNaN(dataTarefa.getTime())) {
+                const hoje = new Date();
+                dataTarefa.setHours(0, 0, 0, 0);
+                hoje.setHours(0, 0, 0, 0);
+                if (dataTarefa < hoje) {
+                    statusNorm = 'nao-feita';
+                }
+            }
+        }
+        
+        return statusNorm;
     }
 
     function statusTexto(statusNormalizado) {
@@ -340,10 +362,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function obterDisciplina(tarefa) {
-        if (Array.isArray(tarefa.materias) && tarefa.materias.length > 0) {
-            return tarefa.materias.map((materia) => materia.nome).filter(Boolean).join(', ');
+        const materiasArray = tarefa.materias || tarefa.tarefas_materias || [];
+        if (Array.isArray(materiasArray) && materiasArray.length > 0) {
+            const nomes = materiasArray.map((m) => {
+                if (typeof m === 'string') return m;
+                return m?.nome || m?.materia?.nome || m?.nome_materia;
+            }).filter(Boolean);
+            
+            if (nomes.length > 0) return nomes.join(', ');
         }
-        return tarefa.disciplina || 'Geral';
+        return tarefa.disciplina || tarefa.materia || 'Geral';
     }
 
     function renderizarTarefas() {
@@ -365,8 +393,9 @@ document.addEventListener('DOMContentLoaded', () => {
         taskListContainer.innerHTML = '';
 
         tarefasFiltradas.forEach((t) => {
-            const statusNormalizado = normalizarStatus(t.status);
-            const dataFormatada = formatarData(t.data_vencimento || t.data_entrega || t.dataEntrega || t.data);
+            const dataStr = t.data_vencimento || t.data_entrega || t.dataEntrega || t.data;
+            const statusNormalizado = normalizarStatus(t.status, dataStr);
+            const dataFormatada = formatarData(dataStr);
             const disciplina = obterDisciplina(t);
             const titulo = t.titulo || t.nome || 'Sem título';
 

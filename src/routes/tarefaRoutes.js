@@ -4,20 +4,30 @@ const authHandler = require('../middlewares/authHandler');
 
 const router = express.Router();
 
-router.use(authHandler); // Aplica o middleware de autenticação a todas as rotas deste router
+router.use(authHandler);
 
-// Rota para cadastrar uma tarefa
+// criar tarefa
 router.post('/', TarefaController.cadastrar);
 
-// Rota para listar todas as tarefas de um usuário específico
-router.get('/usuario/:user_id/:ano_mes', TarefaController.listar);
-// para extensão, serve para buscar as pentendes
+// pendentes (DEVE vir antes de rotas curingas para evitar conflito de rotas)
 router.get('/usuario/:user_id/pendentes', TarefaController.listarPendentes);
-// para atualizar tarefas
+
+// selecionar tarefa específica
+router.get(
+  '/usuario/tarefaSelecionada/:user_id/:tarefaId',
+  TarefaController.listarTarefaSelecionada
+);
+
+// listar tarefas por mês/ano (usado pelo calendário, ex: 2026-01)
+router.get('/usuario/:user_id/:ano_mes', TarefaController.listar);
+
+// listar tarefas (TUDO ou FILTRADO POR MÊS/STATUS via query)
+router.get('/usuario/:user_id', TarefaController.listar);
+
+// atualizar
 router.put('/activities/:id', TarefaController.atualizar);
 
-router.get('/usuario/tarefaSelecionada/:user_id/:tarefaId',TarefaController.listarTarefaSelecionada);
-
+// deletar
 router.delete('/activities/:id', TarefaController.deletar);
 
 module.exports = router;

@@ -56,35 +56,39 @@ class TarefaService {
             .eq('id', id)
             .select();
 
-        // TABELA DE RELACIONAMENTO 
-        const { error: deleteError } = await supabase
-            .from('tarefas_materias')
-            .delete()
-            .eq('tarefa_id', id);
+        // TABELA DE RELACIONAMENTO (Apenas atualiza se o array foi passado, evita falhas ao alterar status)
+        if (idMaterias && Array.isArray(idMaterias)) {
+            const { error: deleteError } = await supabase
+                .from('tarefas_materias')
+                .delete()
+                .eq('tarefa_id', id);
 
-        if (deleteError) {
-            throw new AppError(
-                deleteError.message,
-                400,
-                'TASK_MATERIAS_DELETE_ERROR'
-            );
-        }
+            if (deleteError) {
+                throw new AppError(
+                    deleteError.message,
+                    400,
+                    'TASK_MATERIAS_DELETE_ERROR'
+                );
+            }
 
-        const { error: insertError } = await supabase
-            .from('tarefas_materias')
-            .insert(
-                idMaterias.map(materiaId => ({
-                    tarefa_id: id,
-                    materia_id: materiaId
-                }))
-            );
+            if (idMaterias.length > 0) {
+                const { error: insertError } = await supabase
+                    .from('tarefas_materias')
+                    .insert(
+                        idMaterias.map(materiaId => ({
+                            tarefa_id: id,
+                            materia_id: materiaId
+                        }))
+                    );
 
-        if (insertError) {
-            throw new AppError(
-                insertError.message,
-                400,
-                'TASK_MATERIAS_INSERT_ERROR'
-            );
+                if (insertError) {
+                    throw new AppError(
+                        insertError.message,
+                        400,
+                        'TASK_MATERIAS_INSERT_ERROR'
+                    );
+                }
+            }
         }
 
         if (error) {

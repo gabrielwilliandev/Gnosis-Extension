@@ -72,7 +72,7 @@ async function checarTarefasPendentes() {
         const tarefas = Array.isArray(payload.data) ? payload.data : [];
         const pendentes = tarefas.filter((t) => {
             const status = String(t.status || '').toLowerCase();
-            return !['feita', 'feito', 'concluida', 'concluída', 'done', 'completed'].includes(status);
+            return !['feita', 'feito', 'concluida', 'concluída', 'done', 'completed', 'finalizada'].includes(status);
         });
 
         pendentes.forEach((tarefa) => {
@@ -133,8 +133,9 @@ function dispararNotificacao(tarefa, mensagemPrazo) {
         prazoFormatado = new Date(dataReferencia).toLocaleDateString('pt-BR');
     }
 
-    const disciplina = Array.isArray(tarefa.materias) && tarefa.materias.length > 0
-        ? tarefa.materias.map((materia) => materia.nome).filter(Boolean).join(', ').toUpperCase()
+    const materiasArray = tarefa.materias || tarefa.tarefas_materias || [];
+    const disciplina = Array.isArray(materiasArray) && materiasArray.length > 0
+        ? materiasArray.map((m) => m?.nome || m?.materia?.nome).filter(Boolean).join(', ').toUpperCase()
         : 'GNOSIS ORACLE';
 
     chrome.notifications.create({
