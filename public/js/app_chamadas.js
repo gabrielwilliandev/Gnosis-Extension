@@ -164,7 +164,7 @@ function inicializarLogout() {
 
 //--- CONTROLE DE CADASTRO ---
 function cadastrarUsuario(){
-    const form = document.getElementById('form_cadastroUsuario');
+    const form = document.querySelector('#form_cadastroUsuario form') || document.getElementById('form_cadastroUsuario');
     if (!form) return;
 
     const nomeUsuario = document.querySelector('input[name="cadastrar_nome"]');
@@ -193,8 +193,12 @@ function cadastrarUsuario(){
                 console.log(data)
                 if (!response.ok) throw new Error(data.errors?.[0]?.message || data.message || "Credenciais inválidas");
 
-                alert('Cadastro realizado com sucesso!');
-                window.location.href = '/';
+                mostrarMensagemCadastro(data.message || 'Cadastrado com sucesso.');
+                form.reset();
+
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 1500);
 
             } catch (error) {
                 alert(error.message);
@@ -205,6 +209,26 @@ function cadastrarUsuario(){
     
 }
 
+function mostrarMensagemCadastro(mensagem) {
+    const modalBody = document.getElementById('form_cadastroUsuario');
+    if (!modalBody) {
+        alert(mensagem);
+        return;
+    }
+
+    let alerta = document.getElementById('mensagem-cadastro-sucesso');
+    if (!alerta) {
+        alerta = document.createElement('div');
+        alerta.id = 'mensagem-cadastro-sucesso';
+        alerta.className = 'alert alert-success mb-3';
+        alerta.setAttribute('role', 'alert');
+        modalBody.prepend(alerta);
+    }
+
+    alerta.textContent = mensagem;
+    alerta.classList.remove('d-none');
+}
+
 
 // =========================================================================================================
 //                                             CALENDÁRIO
@@ -212,6 +236,7 @@ function cadastrarUsuario(){
 let dataAtual = new Date();
 let mesAtual = dataAtual.getMonth();
 let anoAtual = dataAtual.getFullYear();
+let atividadesPorData = {};
 
 function configurarBotoesCalendario() {
     const btnProximo = document.getElementById('proximo-mes');
@@ -260,7 +285,7 @@ function montarCalendario(mes, ano) {
             html_habilitado = `onclick="exibir_cadastrar_atividade('${data_vencimento}');"`;
             background = '';
         }
-        html += `<td id="td_${data_vencimento}"  ${html_habilitado} data-bs-toggle="modal" style="cursor: pointer; ${background}"><span style="font-size: 14px; font-weight: bold;">${dia} <p id="qtd_tarefas_${data_vencimento}" onclick="exibir_tarefas(${data_vencimento});"></p></span></td>`;
+        html += `<td id="td_${data_vencimento}"  ${html_habilitado} data-bs-toggle="modal" style="cursor: pointer; ${background}"><span style="font-size: 14px; font-weight: bold;">${dia}<button type="button" id="qtd_tarefas_${data_vencimento}" class="contador-tarefas d-none" onclick="exibir_tarefas(event, '${data_vencimento}');"></button></span></td>`;
 
 
         contadorSemana++;
@@ -319,6 +344,7 @@ function exibir_cadastrar_atividade(data){
 
 function cadastrar_atividade(){
     const formAtividade = document.getElementById('form_cadastrar_atividade');    
+    if (!formAtividade) return;
       
     // PRECISA FAZER A VERIFICAÇÃO DOS CAMPOS EM BRANCO
     formAtividade.addEventListener('submit', async (e) => {    
@@ -384,6 +410,7 @@ function cadastrar_atividade(){
 }
 
 function listar_atividades(mes_ano){
+    atividadesPorData = {};
     const cookieDados = obterCookie('gnosis_user');
     if (!cookieDados) {
         console.warn('Sessão ou dados do usuário indisponíveis para listar atividades.');
@@ -453,6 +480,11 @@ function listar_atividades(mes_ano){
                         tarefasPorDia[data_vencimento] = {}
                     }
 
+                    if(!atividadesPorData[data_vencimento]){
+                        atividadesPorData[data_vencimento] = [];
+                    }
+                    atividadesPorData[data_vencimento].push(t);
+
                     tarefasPorDia[data_vencimento][t.id] = {
                         titulo: t.titulo,
                         background_cor: cor,
@@ -462,15 +494,16 @@ function listar_atividades(mes_ano){
                     let qtd = Object.keys(tarefasPorDia[data_vencimento]).length;
 
                     // PRECISA VERIFICAR SE A ATIVIDADE É DO PASSADO                    
-                    const evento = diferencaDias >= 0 ? `onclick="exibir_atividade(event, ${t.id});` : '';
+                    const evento = diferencaDias >= 0 ? `onclick="exibir_atividade(event, ${t.id});"` : '';
 
                     if (qtd <= 2){ 
-                        td_dia.append(`<span class="atividades_${data_vencimento}" ${evento}"  style="z-index: 1; display: block;width: calc(100% - 8px);margin: 2px 4px;padding: 3px 6px;border-radius: 6px;background-color: ${cor};color: ${texto_cor};font-size: 12px;font-weight: 500;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;cursor: pointer; ${tachado}" >${t.titulo}</span>`);
+                        td_dia.append(`<span class="atividades_${data_vencimento}" ${evento}  style="z-index: 1; display: block;width: calc(100% - 8px);margin: 2px 4px;padding: 3px 6px;border-radius: 6px;background-color: ${cor};color: ${texto_cor};font-size: 12px;font-weight: 500;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;cursor: pointer; ${tachado}" >${escapeHtml(t.titulo)}</span>`);
                     }
                     // Exibindo a quantidade de tarefas por dia
                     const campo_qtd_tarefas_dias = document.getElementById(`qtd_tarefas_${data_vencimento}`);
                     if (campo_qtd_tarefas_dias) {
                         campo_qtd_tarefas_dias.innerHTML = qtd;
+                        campo_qtd_tarefas_dias.classList.remove('d-none');
                     }
                 });         
             }                        
@@ -481,6 +514,69 @@ function listar_atividades(mes_ano){
     .catch(err => console.error('Erro de rede ao buscar matérias:', err));
 }
 
+function exibir_tarefas(event, data_vencimento) {
+    if (event) event.stopPropagation();
+
+    const tarefas = atividadesPorData[data_vencimento] || [];
+    const tdDia = document.getElementById(`td_${data_vencimento}`);
+    if (!tdDia) return;
+
+    const painelAberto = tdDia.querySelector('.atividades-dia-expansao');
+    document.querySelectorAll('.atividades-dia-expansao').forEach(painel => {
+        if (painel !== painelAberto) painel.remove();
+    });
+
+    if (painelAberto) {
+        painelAberto.remove();
+        return;
+    }
+
+    const painel = document.createElement('div');
+    painel.className = 'atividades-dia-expansao';
+    painel.onclick = (e) => e.stopPropagation();
+
+    if (!tarefas.length) {
+        painel.innerHTML = '<p class="text-secondary m-0">Nenhuma atividade cadastrada.</p>';
+    } else {
+        painel.innerHTML = tarefas.map(tarefa => {
+            const materia = tarefa.materias?.[0]?.nome || 'Sem materia';
+            const status = tarefa.status || 'Pendente';
+            const statusClasse = status === 'Finalizada' ? 'status-feita' : 'status-pendente';
+            const descricao = tarefa.descricao ? `<span class="atividade-expansao-descricao">${escapeHtml(tarefa.descricao)}</span>` : '';
+
+            return `
+                <button type="button" class="atividade-expansao-item" onclick="exibir_atividade(event, ${tarefa.id});">
+                    <span class="atividade-expansao-topo">
+                        <strong>${escapeHtml(tarefa.titulo)}</strong>
+                        <span class="status-badge ${statusClasse}">${escapeHtml(status)}</span>
+                    </span>
+                    ${descricao}
+                    <span class="atividade-expansao-meta">
+                        <span><i class="fa-regular fa-clock me-1"></i>${formatarHoraAtividade(tarefa.hora_vencimento)}</span>
+                        <span><i class="fa-solid fa-book me-1"></i>${escapeHtml(materia)}</span>
+                    </span>
+                </button>
+            `;
+        }).join('');
+    }
+
+    tdDia.appendChild(painel);
+}
+
+function escapeHtml(valor) {
+    return String(valor ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function formatarHoraAtividade(hora) {
+    if (!hora) return 'Sem horario';
+    return hora.slice(0, 5);
+}
+
 // =========================================================================================================
 //                                             ATIVIDADE - EDITAR
 // =========================================================================================================
@@ -488,6 +584,7 @@ function listar_atividades(mes_ano){
 function exibir_atividade(event, tarefa_id){
     // EXIBIR A MODAL DA ATIVIDADE
     event.stopPropagation(); // Serve para não exutar a função do td, que esta englobando a ficha de atividade
+    document.querySelectorAll('.atividades-dia-expansao').forEach(painel => painel.remove());
 
     // PRECISO BUSCAR OS DADOS DA ATIVIDADE E PREENCHER OS CAMPOS
     const cookieDados = obterCookie('gnosis_user');
@@ -560,6 +657,7 @@ function exibir_atividade(event, tarefa_id){
 
 function editar_atividade(){
     const formAtividade = document.getElementById('form_editar_atividade');    
+    if (!formAtividade) return;
       
     // PRECISA FAZER A VERIFICAÇÃO DOS CAMPOS EM BRANCO
     formAtividade.addEventListener('submit', async (e) => { 
