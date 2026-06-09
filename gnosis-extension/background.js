@@ -133,9 +133,12 @@ function dispararNotificacao(tarefa, mensagemPrazo) {
         prazoFormatado = new Date(dataReferencia).toLocaleDateString('pt-BR');
     }
 
-    const materiasArray = tarefa.materias || tarefa.tarefas_materias || [];
+    const materiasArray = tarefa.materias || tarefa.tarefas_materias || tarefa.tarefa_materia || [];
     const disciplina = Array.isArray(materiasArray) && materiasArray.length > 0
-        ? materiasArray.map((m) => m?.nome || m?.materia?.nome).filter(Boolean).join(', ').toUpperCase()
+        ? materiasArray.map((m) => {
+            if (Array.isArray(m)) m = m[0];
+            return m?.nome || m?.materia?.nome || m?.materias?.nome || m?.nome_materia;
+        }).filter(Boolean).join(', ').toUpperCase()
         : 'GNOSIS ORACLE';
 
     chrome.notifications.create({

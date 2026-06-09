@@ -30,17 +30,23 @@ document.addEventListener('DOMContentLoaded', () => {
     init();
     configurarEventosFiltro();
 
-    function init() {
-        chrome.storage.local.get(['gnosis_token', 'gnosis_user'], (resultado) => {
-            const usuario = resultado.gnosis_user;
+    async function init() {
+        const cookieToken = await chrome.cookies.get({ url: API_BASE_URL, name: 'gnosis_token' });
+        const cookieUser = await chrome.cookies.get({ url: API_BASE_URL, name: 'gnosis_user' });
 
-            if (resultado.gnosis_token && usuario?.id) {
-                mostrarTelaTarefas(usuario);
-                buscarTarefas(usuario.id);
-                return;
+        if (cookieToken?.value && cookieUser?.value) {
+            try {
+                const usuario = JSON.parse(decodeURIComponent(cookieUser.value));
+                if (usuario?.id) {
+                    mostrarTelaTarefas(usuario);
+                    buscarTarefas(usuario.id);
+                    return;
+                }
+            } catch (err) {
+                console.error('[Gnosis] Falha ao ler cookie de usuário:', err);
             }
-            mostrarTelaLogin();
-        });
+        }
+        mostrarTelaLogin();
     }
 
     function configurarEventosFiltro() {
@@ -155,12 +161,12 @@ document.addEventListener('DOMContentLoaded', () => {
     async function buscarTarefas(userId) {
         // ... mantém a injeção do HTML de loading Tasks aqui ...
 
-        // Puxa o token e faz a requisição protegida
-        chrome.storage.local.get(['gnosis_token'], async (resultado) => {
-            const token = resultado.gnosis_token;
+        // Puxa o token do cookie e faz a requisição protegida
+        const cookieToken = await chrome.cookies.get({ url: API_BASE_URL, name: 'gnosis_token' });
+        const token = cookieToken?.value || null;
 
-            try {
-                const response = await fetch(`${API_BASE_URL}/tarefas/usuario/${encodeURIComponent(userId)}`, {
+        try {
+            const response = await fetch(`${API_BASE_URL}/tarefas/usuario/${encodeURIComponent(userId)}/TODOS`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}` // <-- PROTEÇÃO AQUI
@@ -195,23 +201,29 @@ document.addEventListener('DOMContentLoaded', () => {
                         Falha ao carregar a constelacao.<br>${error.message || 'Verifique se a API esta online.'}
                     </div>`;
             }
-        });
     }
 
-    async function alterarStatusTarefa(id, titulo, descricao, statusAtual) {
+    async function alterarStatusTarefa(tarefa) {
         // Transita entre os status oficiais que o backend espera ("Finalizada" e "Pendente")
-        const novoStatus = normalizarStatus(statusAtual) === 'feita' ? 'Pendente' : 'Finalizada';
+        const novoStatus = normalizarStatus(tarefa.status) === 'feita' ? 'Pendente' : 'Finalizada';
 
-        // Puxa o token de forma assíncrona do storage da extensão
-        chrome.storage.local.get(['gnosis_token'], async (resultado) => {
-            const token = resultado.gnosis_token;
+        // Puxa o token do cookie
+        const cookieToken = await chrome.cookies.get({ url: API_BASE_URL, name: 'gnosis_token' });
+        const token = cookieToken?.value || null;
+
+            // Extrair os IDs das matérias para não apagá-las no backend
+            const materiasArray = tarefa.materias || [];
+            const idMaterias = materiasArray.map(m => m?.id || m?.idMateria).filter(Boolean);
 
             try {
-                const URL = `${API_BASE_URL}/tarefas/activities/${encodeURIComponent(id)}`;
+                const URL = `${API_BASE_URL}/tarefas/activities/${encodeURIComponent(tarefa.id)}`;
                 const dadosParaAtualizar = {
-                    titulo: titulo || 'Sem titulo',
-                    descricao: descricao || 'Sem descricao',
-                    status: novoStatus
+                    titulo: tarefa.titulo || 'Sem titulo',
+                    descricao: tarefa.descricao || 'Sem descricao',
+                    status: novoStatus,
+                    data_vencimento: tarefa.data_vencimento || tarefa.data_entrega || undefined,
+                    hora_vencimento: tarefa.hora_vencimento || undefined,
+                    idMaterias: idMaterias.length > 0 ? idMaterias : undefined
                 };
 
                 const response = await fetch(URL, {
@@ -227,16 +239,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const payload = await response.json();
 
                 if (payload.success) {
-                    const idx = tarefasCache.findIndex(t => t.id === id);
+                    const idx = tarefasCache.findIndex(t => t.id === tarefa.id);
                     if (idx !== -1) {
                         tarefasCache[idx].status = novoStatus;
                         renderizarTarefas();
                     }
                 }
             } catch (err) {
-                alert(`Uai, deu erro ao atualizar: ${err.message}`);
+                alert(`Erro ao atualizar: ${err.message}`);
             }
-        });
     }
 
     function aplicarFiltros(lista) {
@@ -285,9 +296,12 @@ document.addEventListener('DOMContentLoaded', () => {
             // 4. Filtro por Caixa de Texto (Busca livre)
             if (!termoBusca) return true;
 
-            const materiasArray = t.materias || t.tarefas_materias || [];
+            const materiasArray = t.materias || t.tarefas_materias || t.tarefa_materia || [];
             const materiaTexto = Array.isArray(materiasArray)
-                ? materiasArray.map((m) => m?.nome || m?.materia?.nome).filter(Boolean).join(' ')
+                ? materiasArray.map((m) => {
+                    if (Array.isArray(m)) m = m[0];
+                    return m?.nome || m?.materia?.nome || m?.materias?.nome || m?.nome_materia;
+                }).filter(Boolean).join(' ')
                 : '';
 
             const texto = [
@@ -362,11 +376,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function obterDisciplina(tarefa) {
-        const materiasArray = tarefa.materias || tarefa.tarefas_materias || [];
+        const materiasArray = tarefa.materias || tarefa.tarefas_materias || tarefa.tarefa_materia || [];
         if (Array.isArray(materiasArray) && materiasArray.length > 0) {
             const nomes = materiasArray.map((m) => {
+                if (Array.isArray(m)) m = m[0];
                 if (typeof m === 'string') return m;
-                return m?.nome || m?.materia?.nome || m?.nome_materia;
+                return m?.nome || m?.materia?.nome || m?.materias?.nome || m?.nome_materia;
             }).filter(Boolean);
             
             if (nomes.length > 0) return nomes.join(', ');
@@ -403,8 +418,8 @@ document.addEventListener('DOMContentLoaded', () => {
             card.className = `task-card ${statusNormalizado}`;
             
             card.innerHTML = `
-                <div class="d-flex justify-content-between align-items-start gap-2">
-                    <div class="flex-grow-1">
+                <div class="d-flex justify-content-between align-items-start gap-2 w-100 overflow-hidden">
+                    <div style="flex: 1; min-width: 0;"> 
                         <p class="mb-1 task-meta">
                             <span class="d-inline-flex align-items-center" style="font-weight: 700;">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="me-1" viewBox="0 0 16 16">
@@ -420,9 +435,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                 ${dataFormatada || 'Sem data'}
                             </span>
                         </p>
-                        <h6 class="task-title">${titulo}</h6>
+                        <div class="task-title" title="${titulo}">${titulo}</div>
                     </div>
-                    <div class="status-badge ${statusBadgeClass(statusNormalizado)}" style="cursor: pointer;" title="Clique para alterar o status">
+                    <div class="status-badge flex-shrink-0 ${statusBadgeClass(statusNormalizado)}" style="cursor: pointer;" title="Clique para alterar o status">
                         ${getStatusIcon(statusNormalizado)}
                         <span>${statusTexto(statusNormalizado)}</span>
                     </div>
@@ -432,7 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const badge = card.querySelector('.status-badge');
             badge.addEventListener('click', (e) => {
                 e.stopPropagation();
-                alterarStatusTarefa(t.id, t.titulo, t.descricao, t.status);
+                alterarStatusTarefa(t);
             });
 
             taskListContainer.appendChild(card);

@@ -23,11 +23,6 @@ class TarefaRepository {
     }
 
     static async buscarPorUsuario(userId, ano_mes) {
-       const inicioMes = `${ano_mes}-01`;
-       const [ano, mes] = ano_mes.split('-').map(Number);
-
-       const proximoMes = mes === 12 ? `${ano + 1}-01-01` : `${ano}-${String(mes + 1).padStart(2, '0')}-01`; 
-
        let filtro = supabase
         .from('tarefas')
         .select(`
@@ -39,6 +34,9 @@ class TarefaRepository {
         .eq('user_id', userId);
 
         if (ano_mes && ano_mes !== 'TODOS') {
+            const inicioMes = `${ano_mes}-01`;
+            const [ano, mes] = ano_mes.split('-').map(Number);
+            const proximoMes = mes === 12 ? `${ano + 1}-01-01` : `${ano}-${String(mes + 1).padStart(2, '0')}-01`; 
             filtro = filtro.gte('data_vencimento', inicioMes).lt('data_vencimento', proximoMes);
         }
 
@@ -49,7 +47,7 @@ class TarefaRepository {
 
         return data.map((tarefa) => ({
             ...tarefa,
-            materias: tarefa.tarefas_materias.map((tm) => tm.materias)
+            materias: (tarefa.tarefas_materias || []).map((tm) => tm.materias)
         }));
     }
 
@@ -57,8 +55,10 @@ class TarefaRepository {
         const { data, error } = await supabase
             .from('tarefas')
             .select(`
-            *, tarefas_materias(materias(id, nome)
-            )
+                *,
+                tarefas_materias (
+                    materias (id, nome)
+                )
             `)
             .eq('user_id', userId)
             .eq('status', 'Pendente')
@@ -71,7 +71,7 @@ class TarefaRepository {
 
         return data.map((tarefa) => ({
             ...tarefa,
-            materias: tarefa.tarefas_materias.map((tm) => tm.materias)
+            materias: (tarefa.tarefas_materias || []).map((tm) => tm.materias)
         }));
     }
 
@@ -79,8 +79,10 @@ class TarefaRepository {
         const { data, error } = await supabase
             .from('tarefas')
             .select(`
-            *, tarefas_materias(materias(id, nome)
-            )
+                *,
+                tarefas_materias (
+                    materias (id, nome)
+                )
             `)
             .eq('user_id', userId)
             .eq('id', tarefaId);
@@ -91,7 +93,7 @@ class TarefaRepository {
 
         return data.map((tarefa) => ({
             ...tarefa,
-            materias: tarefa.tarefas_materias.map((tm) => tm.materias)
+            materias: (tarefa.tarefas_materias || []).map((tm) => tm.materias)
         }));
     }
     static async deletar(id) {
