@@ -3,22 +3,23 @@
   "name": "Gnosis",
   "version": "1.0.0",
   "description": "Gerenciador de atividades e notificações",
-  
   "icons": {
-    "16": "icon-16.png",
-    "32": "icon-32.png",
-    "48": "icon-48.png",
-    "128": "icon-128.png"
+    "16":  "icons/icon-16.png",
+    "32":  "icons/icon-32.png",
+    "48":  "icons/icon-48.png",
+    "128": "icons/icon-128.png"
   },
-
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Abrir Gnosis",
-    "default_icon": "icon-16.png"
+    "default_icon": {
+        "16":  "icons/icon-16.png",
+        "32":  "icons/icon-32.png",
+        "48":  "icons/icon-48.png",
+        "128": "icons/icon-128.png"
+    }
   },
-
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "js/background/background.js"
   },
   "permissions": [
     "notifications",
