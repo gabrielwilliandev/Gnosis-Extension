@@ -246,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             } catch (err) {
-                alert(`Erro ao atualizar: ${err.message}`);
+                alert(`Uai, deu erro ao atualizar: ${err.message}`);
             }
     }
 
@@ -418,8 +418,8 @@ document.addEventListener('DOMContentLoaded', () => {
             card.className = `task-card ${statusNormalizado}`;
             
             card.innerHTML = `
-                <div class="d-flex justify-content-between align-items-start gap-2 w-100 overflow-hidden">
-                    <div style="flex: 1; min-width: 0;"> 
+                <div class="d-flex justify-content-between align-items-start gap-2">
+                    <div class="flex-grow-1" style="min-width: 0;">
                         <p class="mb-1 task-meta">
                             <span class="d-inline-flex align-items-center" style="font-weight: 700;">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="me-1" viewBox="0 0 16 16">
@@ -435,9 +435,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                 ${dataFormatada || 'Sem data'}
                             </span>
                         </p>
-                        <div class="task-title" title="${titulo}">${titulo}</div>
+                        <h6 class="task-title" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${titulo}">${titulo}</h6>
                     </div>
-                    <div class="status-badge flex-shrink-0 ${statusBadgeClass(statusNormalizado)}" style="cursor: pointer;" title="Clique para alterar o status">
+                    <div class="status-badge ${statusBadgeClass(statusNormalizado)}" style="cursor: pointer;" title="Clique para alterar o status">
                         ${getStatusIcon(statusNormalizado)}
                         <span>${statusTexto(statusNormalizado)}</span>
                     </div>
@@ -455,6 +455,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     btnSair.addEventListener('click', async () => {
+
+    btnAtualizar.addEventListener('click', async () => {
+        const cookieUser = await chrome.cookies.get({ url: API_BASE_URL, name: 'gnosis_user' });
+        if (!cookieUser?.value) return;
+        try {
+            const usuario = JSON.parse(decodeURIComponent(cookieUser.value));
+            if (usuario?.id) await buscarTarefas(usuario.id);
+        } catch (err) {
+            console.error('[Gnosis] Falha ao atualizar tarefas:', err);
+        }
+    });
         await chrome.cookies.remove({ url: API_BASE_URL, name: 'gnosis_token' });
         await chrome.cookies.remove({ url: API_BASE_URL, name: 'gnosis_user' });
         
