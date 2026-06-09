@@ -285,7 +285,8 @@ function montarCalendario(mes, ano) {
             html_habilitado = `onclick="exibir_cadastrar_atividade('${data_vencimento}');"`;
             background = '';
         }
-        html += `<td id="td_${data_vencimento}"  ${html_habilitado} data-bs-toggle="modal" style="cursor: pointer; ${background}"><span style="font-size: 14px; font-weight: bold;">${dia}<button type="button" id="qtd_tarefas_${data_vencimento}" class="contador-tarefas d-none" onclick="exibir_tarefas(event, '${data_vencimento}');"></button></span></td>`;
+        html += `<td id="td_${data_vencimento}"  ${html_habilitado} data-bs-toggle="modal" style="cursor: pointer; ${background}">
+        <span style="font-size: 14px; font-weight: bold;">${dia}<button type="button" id="qtd_tarefas_${data_vencimento}" class="contador-tarefas d-none" onclick="exibir_tarefas(event, '${data_vencimento}');"></button></span></td>`;
 
 
         contadorSemana++;
@@ -497,7 +498,8 @@ function listar_atividades(mes_ano){
                     const evento = diferencaDias >= 0 ? `onclick="exibir_atividade(event, ${t.id});"` : '';
 
                     if (qtd <= 2){ 
-                        td_dia.append(`<span class="atividades_${data_vencimento}" ${evento}  style="z-index: 1; display: block;width: calc(100% - 8px);margin: 2px 4px;padding: 3px 6px;border-radius: 6px;background-color: ${cor};color: ${texto_cor};font-size: 12px;font-weight: 500;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;cursor: pointer; ${tachado}" >${escapeHtml(t.titulo)}</span>`);
+                        // lucas
+                        td_dia.append(`<span class="atividades_${data_vencimento}" ${evento}   style="z-index: 1; display: block;margin: 2px 4px;padding: 3px 6px;border-radius: 6px;background-color: ${cor};color: ${texto_cor};font-size: 12px;font-weight: 500;white-space: nowrap;text-overflow: ellipsis;cursor: pointer; overflow:hidden; white-space:nowrap; width: 115px;  ${tachado}">${escapeHtml(t.titulo)}</span>`);
                     }
                     // Exibindo a quantidade de tarefas por dia
                     const campo_qtd_tarefas_dias = document.getElementById(`qtd_tarefas_${data_vencimento}`);

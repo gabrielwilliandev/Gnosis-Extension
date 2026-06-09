@@ -413,6 +413,13 @@ body {
     padding: 0;
     cursor: pointer;
 }
+/* CARD ATIVIDADES */
+
+
+
+
+
+/* EXIBIR ATIVIDADES NO DIA */ 
 
 .atividades-dia-expansao{
     position:absolute;
@@ -430,6 +437,7 @@ body {
     border-radius:8px;
     background:white;
     box-shadow:0 8px 24px rgba(13, 42, 58, 0.18);
+    width: 160px;
 }
 
 .atividade-expansao-item{
@@ -446,7 +454,7 @@ body {
 .atividade-expansao-item:hover{
     background:#eef0ff;
 }
-
+/*lucas */
 .atividade-expansao-topo{
     display:flex;
     align-items:flex-start;
