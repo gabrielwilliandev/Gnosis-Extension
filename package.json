@@ -4,11 +4,22 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "@supabase/supabase-js": "^2.104.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "expresss": "^0.0.0"
+    "expresss": "^0.0.0",
+    "jsonwebtoken": "^9.0.3",
+    "jwks-rsa": "^4.0.1",
+    "mustache": "^4.2.0",
+    "mustache-express": "^1.3.2"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "node src/app.js",
+    "diagnose:materias": "node scripts/diagnose-materias.js",
+    "test:materias": "node scripts/diagnose-materias.js"
   },
   "repository": {
     "type": "git",

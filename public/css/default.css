@@ -2,6 +2,10 @@ a{
     text-decoration: none;
 }
 
+body {
+     overflow: hidden; /* BLOQUEIA A ROLAGEM DA TELA */
+}
+
 .body-login {
     height: 100vh;
     width: 100%;     
@@ -19,6 +23,7 @@ a{
     }
 }
 
+/*------------------------------------------------------------------------- LOGIN -------------------------------------------------------------------------*/
 .col_login_e{
     color: #ffff;
     padding: 0px 5em;
@@ -140,4 +145,488 @@ a{
     color: #6c757d;
     cursor: pointer;
     z-index: 10;
+}
+
+/*------------------------------------------------------------------------- HOME -------------------------------------------------------------------------*/
+/* LAYOUT */
+
+.layout-home{
+    display:flex;
+    height:100vh;
+}
+
+/* SIDEBAR */
+
+.sidebar{
+    width:260px;
+    background:#0D2A3A;
+    color:white;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+
+    padding:20px 16px;
+}
+
+.sidebar-top{
+    display:flex;
+    flex-direction:column;
+    gap:25px;
+}
+
+/* LOGO */
+
+.logo-container{
+    display:flex;
+    align-items:center;
+    gap:12px;
+
+    padding-bottom:20px;
+    border-bottom:1px solid rgba(255,255,255,0.08);
+}
+
+.logo-icon{
+    width:42px;
+    height:42px;
+
+    border-radius:12px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    background:rgba(255,255,255,0.06);
+}
+
+.logo-text{
+    font-size:24px;
+    font-weight:700;
+}
+
+/* USER */
+
+.user-card{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.icon_user{
+    width:48px;
+    height:48px;
+
+    border-radius:50%;
+
+    background:#BF914D;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    font-size:22px;
+    font-weight:bold;
+}
+
+#nome-user{
+    font-size:15px;
+}
+
+#email-user{
+    font-size:12px;
+    opacity:0.7;
+}
+
+/* MENU */
+
+.menu-sidebar{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.menu-item{
+    height:48px;
+
+    border:none;
+    border-radius:12px;
+
+    background:transparent;
+    color:white;
+
+    text-align:left;
+
+    padding:0 16px;
+
+    cursor:pointer;
+
+    transition:0.2s;
+}
+
+.menu-item:hover{
+    background:rgba(255,255,255,0.06);
+}
+
+.menu-item.active{
+    background:#10384d;
+}
+
+/* LOGOUT */
+
+.logout-button{
+    color:#d1d5db;
+    text-decoration:none;
+
+    display:flex;
+    align-items:center;
+
+    height:48px;
+
+    border-top:1px solid rgba(255,255,255,0.08);
+
+    padding-top:16px;
+}
+
+/* MAIN */
+
+.main-content{
+    flex:1;
+
+    padding:20px;
+
+    overflow:auto;
+}
+
+/* HEADER */
+.navbar-home{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    margin-bottom:20px;
+}
+
+.mes-seletor{
+    background:rgba(203, 203, 204, 0.507);
+    padding: 5px 6px;    
+    border-radius:12px;
+    font-weight:600;
+    box-shadow:0 2px 10px rgba(0, 0, 0, 0.26);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.botoes-mes{
+    background-color: transparent; 
+    padding: 2px 10px;   
+    border: none;
+    color: #6b7280;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.navbar-home-acoes{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.campo-pesquisa-atividade{
+    width:260px;
+    height:42px;
+
+    border:none;
+    border-radius:12px;
+
+    padding:0 16px;
+
+    background:white;
+}
+
+.btn-add-atividade{
+    height:42px;
+
+    border:none;
+    border-radius:12px;
+
+    padding:0 18px;
+
+    background:#BF914D;
+    color:white;
+
+    font-weight:600;
+
+    cursor:pointer;
+}
+
+/* CALENDÁRIO */
+
+.calendario-container{
+    background:white;
+
+    border-radius:20px;
+
+    padding:20px;
+
+    box-shadow:0 2px 10px rgba(0, 0, 0, 0.521);
+}
+
+.calendario{
+    width:100%;
+    border-collapse:collapse;
+    box-shadow:0 2px 10px rgba(0,0,0,0.04);
+}
+
+.calendario th{
+    color:#6b7280;
+    font-size:16px;
+    text-align: center;
+    padding:16px;
+}
+
+.calendario td{
+    height:120px;
+
+    border:1px solid #ececec;
+
+    vertical-align:top;
+
+    padding:10px;
+    position:relative;
+}
+
+[id^="qtd_tarefas_"] {
+    display: inline-block;
+    float: right;
+    background-color: #6c63ff; /* roxo como na imagem do dia 23 */
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 11px;
+    text-align: center;
+    line-height: 18px;
+    margin-left: 4px;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+}
+/* CARD ATIVIDADES */
+
+
+
+
+
+/* EXIBIR ATIVIDADES NO DIA */ 
+
+.atividades-dia-expansao{
+    position:absolute;
+    top:34px;
+    right:8px;
+    left:8px;
+    z-index:20;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    max-height:180px;
+    overflow:auto;
+    padding:8px;
+    border:1px solid #ddd7ff;
+    border-radius:8px;
+    background:white;
+    box-shadow:0 8px 24px rgba(13, 42, 58, 0.18);
+    width: 160px;
+}
+
+.atividade-expansao-item{
+    width:100%;
+    border:1px solid #ececec;
+    border-left:4px solid #6c63ff;
+    border-radius:6px;
+    background:#f8f9fa;
+    padding:8px;
+    text-align:left;
+    cursor:pointer;
+}
+
+.atividade-expansao-item:hover{
+    background:#eef0ff;
+}
+/*lucas */
+.atividade-expansao-topo{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:8px;
+    font-size:12px;
+}
+
+.atividade-expansao-topo strong{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.atividade-expansao-descricao,
+.atividade-expansao-meta{
+    display:block;
+    margin-top:4px;
+    color:#6b7280;
+    font-size:11px;
+}
+
+.atividade-expansao-meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+}
+
+.task-card{
+    border-radius:16px;
+    padding:14px;
+    margin-bottom:12px;
+
+    border-left:6px solid transparent;
+
+    background:white;
+
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+
+    transition:0.2s;
+}
+
+.task-card:hover{
+    transform:translateY(-2px);
+}
+
+
+.task-card.pendente{
+    background:#fff8e6;
+    border-left-color:#BF914D;
+}
+
+.task-card.feita{
+    background:#e8fff1;
+    border-left-color:#2ecc71;
+}
+
+.task-card.nao-feita{
+    background:#ffecec;
+    border-left-color:#e74c3c;
+}
+
+.status-badge{
+    display:flex;
+    align-items:center;
+    gap:5px;
+
+    padding:6px 10px;
+
+    border-radius:999px;
+
+    font-size:12px;
+    font-weight:600;
+}
+
+.status-pendente{
+    background:#fff1cc;
+    color:#9a6700;
+}
+
+.status-feita{
+    background:#d9fbe8;
+    color:#146c43;
+}
+
+.status-nao-feita{
+    background:#ffdede;
+    color:#a61b1b;
+}
+
+.task-title{
+    font-size:15px;
+    font-weight:700;
+    margin-top:6px;
+}
+
+.task-meta{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+
+    font-size:12px;
+    color:#6b7280;
+}
+
+.legenda-status{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:16px;
+
+    margin-bottom:16px;
+
+    font-size:13px;
+}
+
+.legenda-item{
+    display:flex;
+    align-items:center;
+    gap:6px;
+}
+
+.legenda-cor{
+    width:12px;
+    height:12px;
+    border-radius:50%;
+}
+
+.cor-pendente{
+    background:#BF914D;
+}
+
+.cor-feita{
+    background:#2ecc71;
+}
+
+.cor-nao-feita{
+    background:#e74c3c;
+}
+input[type="color"].custom-input {
+    padding: 0 16px 0 45px !important; /* Respeita o espaço do ícone na esquerda */
+    background-color: rgba(108, 117, 125, 0.1) !important; /* Mantém o bg-secondary bg-opacity-10 */
+    border: 1px solid transparent;
+    border-radius: 12px; /* Padroniza com os outros inputs (era 8px) */
+    cursor: pointer;
+    height: 50px; /* Alinha com a altura padronizada */
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+/* Efeito de foco acompanhando os outros inputs */
+input[type="color"].custom-input:focus {
+    outline: none;
+    border-color: #32A3B1 !important; /* Cor identitária do Gnosis */
+    background-color: rgba(108, 117, 125, 0.15) !important;
+}
+
+/* Remove as bordas internas e cantos retos nativos no Chrome, Edge e Safari */
+input[type="color"].custom-input::-webkit-color-swatch-wrapper {
+    padding: 10px 0; /* Espaçamento vertical para a pílula de cor */
+    background: none;
+}
+
+input[type="color"].custom-input::-webkit-color-swatch {
+    border: none;
+    border-radius: 8px; /* Deixa a pílula de cor interna com borda mais amigável */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), inset 0 0 0 1px rgba(0, 0, 0, 0.05); /* Sombra elegante */
+}
+
+/* Mesma correção de arredondamento para o Firefox */
+input[type="color"].custom-input::-moz-color-swatch {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+    height: 30px;
 }

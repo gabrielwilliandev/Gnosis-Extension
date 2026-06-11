@@ -1,25 +1,69 @@
-/*
-    ---- INSTALAÇÕES ----
-    Instale o nvm: https://github.com/coreybutler/nvm-windows/releases (Intale o nvm-setup.exe)
-    Instale o node v24.14.0 na sua máquina: 
-        nvm install 24.14.0 
-        nvm use 24.14.0
-    
-
-
-
-*/
-
-// Server: é o cérebro da api
 const express = require('express');
-const app = express();
-const path = require('path') // 
+const mustacheExpress = require('mustache-express');
+const path = require('path')
+const cors = require('cors')
+const cookieParser = require('cookie-parser');
 
 const usuarioRoutes = require('./routes/usuarioRoutes');
+const tarefaRoutes = require('./routes/tarefaRoutes')
+const materiaRoutes = require('./routes/materiaRoutes');
+const errorHandler = require('./middlewares/errorHandler');
+const app = express();
+const BUILD_ID = 'materias-hydration-v2';
+
+app.use(cors());
+app.use(express.json());
+app.use(cookieParser());
+app.use((req, res, next) => {
+    res.set('X-Gnosis-Build', BUILD_ID);
+    next();
+});
+
 
 // Ligação com o front end
+app.engine('html', mustacheExpress());
+app.set('view engine', 'html');
+app.set('views', __dirname + '/views');
+app.use(express.urlencoded({extended: true}))
 app.use(express.static(path.join(__dirname, '../public')));
 
-app.use('/usuarios', usuarioRoutes);
-const PORTA = 3000; 
-app.listen(PORTA, () => console.log('Servidor rodando. Porta: '+ PORTA));
+app.use('/api/tarefas', tarefaRoutes)
+app.use('/api/materias', materiaRoutes);
+
+// Rota de saúde só para garantir que o Express não quebrou ao iniciar
+app.get('/api/health', (req, res) => {
+    res.status(200).json({ status: 'Servidor no ar!', build: BUILD_ID });
+});
+
+app.get('/api/debug/build', (req, res) => {
+    res.status(200).json({
+        build: BUILD_ID,
+        cwd: process.cwd(),
+        appFile: __filename,
+        tarefaController: require.resolve('./controllers/TarefaController.js'),
+        tarefaService: require.resolve('./service/TarefaService.js'),
+        tarefaRepository: require.resolve('./repositories/TarefaRepository.js')
+    });
+});
+
+app.use('/api', usuarioRoutes);
+
+app.use(errorHandler);
+
+const PORT = process.env.PORT || 3000; 
+app.listen(PORT, () => {
+    console.log(`🚀 Servidor de testes rodando na porta ${PORT}`);
+    //console.log(`🔗 Health Check: http://localhost:${PORT}/api/health`);
+    console.log(`🔗 Health Check: http://localhost:${PORT}`);
+});
+
+// DEFININDO AS ROTAS DE EXIBIÇÃO DAS PÁGINAS
+app.get('/', (req, res) => {
+    res.render('index', { title: 'Login' });
+});
+
+app.get('/home', (req, res) => {
+    res.render('home');
+});
+
+module.exports = app;

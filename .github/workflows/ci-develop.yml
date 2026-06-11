@@ -30,4 +30,10 @@ jobs:
 
       # 4. Checa se o app.js tem erros de sintaxe graves que impediriam o servidor de ligar
       - name: Checagem de Sintaxe (Dry Run)
+        env:
+            SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+            SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: node -c src/app.js
+
+
+        
