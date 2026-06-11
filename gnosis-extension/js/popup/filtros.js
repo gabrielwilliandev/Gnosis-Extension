@@ -27,11 +27,12 @@ function aplicarFiltros(lista, { filtroAtual, filtroPeriodo, materiasSelecionada
         }
 
         // CORREÇÃO: Reaproveitamos o obterDisciplina do render.js pra garantir igualdade de dados
+        const materiasTarefa = obterMaterias(t);
         const disciplinaTarefa = obterDisciplina(t);
 
         // 3. Filtro por matéria
         if (materiasSelecionadas.length > 0) {
-            if (!materiasSelecionadas.includes(disciplinaTarefa.trim())) return false;
+            if (!materiasSelecionadas.some(materia => materiasTarefa.includes(materia))) return false;
         }
 
         // 4. Busca livre
