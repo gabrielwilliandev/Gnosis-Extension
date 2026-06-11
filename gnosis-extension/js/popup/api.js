@@ -1,4 +1,4 @@
-const API_ORIGIN = 'http://localhost:3000';
+const API_ORIGIN = 'https://gnosis-api.whitesmoke-57ad5be1.eastus.azurecontainerapps.io';
 const API_BASE_URL = `${API_ORIGIN}/api`;
 const SESSION_COOKIE_NAMES = ['gnosis_token', 'gnosis_user'];
 
