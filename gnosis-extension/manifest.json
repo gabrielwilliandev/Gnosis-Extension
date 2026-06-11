@@ -28,6 +28,6 @@
     "cookies"
   ],
   "host_permissions": [
-    "http://localhost:3000/*" 
+    "https://gnosis-api.whitesmoke-57ad5be1.eastus.azurecontainerapps.io/*" 
   ]
 }
