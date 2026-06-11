@@ -1,6 +1,60 @@
 const supabase = require('../config/supabase');
 const AppError = require('../errors/AppError');
 
+function normalizarMateria(relacao) {
+    if (!relacao) return null;
+    if (Array.isArray(relacao)) return normalizarMateria(relacao[0]);
+    if (typeof relacao === 'string') return { nome: relacao };
+
+    return relacao.materias
+        || relacao.materia
+        || relacao.nome_materia && { nome: relacao.nome_materia }
+        || relacao.nome && relacao
+        || null;
+}
+
+function mapearTarefaComMaterias(tarefa, materiasPorTarefa = new Map()) {
+    const relacoes = tarefa.tarefas_materias || tarefa.tarefa_materia || tarefa.materias || [];
+    const materiasRelacionadas = materiasPorTarefa.get(tarefa.id);
+    const materias = Array.isArray(materiasRelacionadas) && materiasRelacionadas.length > 0
+        ? materiasRelacionadas
+        : Array.isArray(relacoes)
+        ? relacoes.map(normalizarMateria).filter(Boolean)
+        : [];
+
+    return {
+        ...tarefa,
+        materias
+    };
+}
+
+async function buscarMateriasPorTarefas(tarefas) {
+    const idsTarefas = tarefas.map((tarefa) => tarefa.id).filter(Boolean);
+    if (idsTarefas.length === 0) return new Map();
+
+    const { data, error } = await supabase
+        .from('tarefas_materias')
+        .select(`
+            tarefa_id,
+            materias (id, nome)
+        `)
+        .in('tarefa_id', idsTarefas);
+
+    if (error) {
+        throw new AppError(`Erro ao buscar materias das tarefas: ${error.message}`, 400, 'TASK_SUBJECT_FETCH_ERROR');
+    }
+
+    return (data || []).reduce((mapa, relacao) => {
+        const materia = normalizarMateria(relacao);
+        if (!materia) return mapa;
+
+        const materias = mapa.get(relacao.tarefa_id) || [];
+        materias.push(materia);
+        mapa.set(relacao.tarefa_id, materias);
+        return mapa;
+    }, new Map());
+}
+
 
 class TarefaRepository {
     static async salvar(tarefaEntity) {
@@ -45,10 +99,8 @@ class TarefaRepository {
             throw new AppError(`Erro ao buscar tarefas: ${error.message}`, 400, 'TASK_FETCH_ERROR');
         }
 
-        return data.map((tarefa) => ({
-            ...tarefa,
-            materias: (tarefa.tarefas_materias || []).map((tm) => tm.materias)
-        }));
+        const materiasPorTarefa = await buscarMateriasPorTarefas(data || []);
+        return data.map((tarefa) => mapearTarefaComMaterias(tarefa, materiasPorTarefa));
     }
 
     static async buscarPendentesPorUsuario(userId) {
@@ -69,10 +121,8 @@ class TarefaRepository {
             throw new AppError(`Erro ao buscar tarefas pendentes: ${error.message}`, 400, 'TASK_PENDING_FETCH_ERROR');
         }
 
-        return data.map((tarefa) => ({
-            ...tarefa,
-            materias: (tarefa.tarefas_materias || []).map((tm) => tm.materias)
-        }));
+        const materiasPorTarefa = await buscarMateriasPorTarefas(data || []);
+        return data.map((tarefa) => mapearTarefaComMaterias(tarefa, materiasPorTarefa));
     }
 
     static async buscarSelecionadaPorUsuario(userId, tarefaId) {
@@ -91,10 +141,8 @@ class TarefaRepository {
             throw new AppError(`Erro ao buscar tarefa: ${error.message}`, 400, 'TASK_FETCH_SELECTED_ERROR');
         }
 
-        return data.map((tarefa) => ({
-            ...tarefa,
-            materias: (tarefa.tarefas_materias || []).map((tm) => tm.materias)
-        }));
+        const materiasPorTarefa = await buscarMateriasPorTarefas(data || []);
+        return data.map((tarefa) => mapearTarefaComMaterias(tarefa, materiasPorTarefa));
     }
     static async deletar(id) {
     const { data, error } = await supabase

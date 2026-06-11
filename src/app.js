@@ -9,10 +9,15 @@ const tarefaRoutes = require('./routes/tarefaRoutes')
 const materiaRoutes = require('./routes/materiaRoutes');
 const errorHandler = require('./middlewares/errorHandler');
 const app = express();
+const BUILD_ID = 'materias-hydration-v2';
 
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
+app.use((req, res, next) => {
+    res.set('X-Gnosis-Build', BUILD_ID);
+    next();
+});
 
 
 // Ligação com o front end
@@ -25,16 +30,27 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.use('/api/tarefas', tarefaRoutes)
 app.use('/api/materias', materiaRoutes);
 
-app.use('/api', usuarioRoutes);
-
 // Rota de saúde só para garantir que o Express não quebrou ao iniciar
 app.get('/api/health', (req, res) => {
-    res.status(200).json({ status: 'Servidor no ar!' });
+    res.status(200).json({ status: 'Servidor no ar!', build: BUILD_ID });
 });
+
+app.get('/api/debug/build', (req, res) => {
+    res.status(200).json({
+        build: BUILD_ID,
+        cwd: process.cwd(),
+        appFile: __filename,
+        tarefaController: require.resolve('./controllers/TarefaController.js'),
+        tarefaService: require.resolve('./service/TarefaService.js'),
+        tarefaRepository: require.resolve('./repositories/TarefaRepository.js')
+    });
+});
+
+app.use('/api', usuarioRoutes);
 
 app.use(errorHandler);
 
-const PORT = 3000; 
+const PORT = process.env.PORT || 3000; 
 app.listen(PORT, () => {
     console.log(`🚀 Servidor de testes rodando na porta ${PORT}`);
     //console.log(`🔗 Health Check: http://localhost:${PORT}/api/health`);

@@ -1,15 +1,35 @@
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_ORIGIN = 'http://localhost:3000';
+const API_BASE_URL = `${API_ORIGIN}/api`;
+const SESSION_COOKIE_NAMES = ['gnosis_token', 'gnosis_user'];
 
 async function getToken() {
-    const cookie = await chrome.cookies.get({ url: API_BASE_URL, name: 'gnosis_token' });
+    const cookie = await chrome.cookies.get({ url: API_ORIGIN, name: 'gnosis_token' });
     return cookie?.value || null;
 }
 
 async function getUsuario() {
-    const cookie = await chrome.cookies.get({ url: API_BASE_URL, name: 'gnosis_user' });
+    const cookie = await chrome.cookies.get({ url: API_ORIGIN, name: 'gnosis_user' });
     if (!cookie?.value) return null;
+
+    const valores = [cookie.value];
+
     try {
-        return JSON.parse(decodeURIComponent(cookie.value));
+        valores.push(decodeURIComponent(cookie.value));
+    } catch {}
+
+    for (const valor of valores) {
+        try {
+            return JSON.parse(valor);
+        } catch {}
+    }
+
+    return null;
+}
+
+function obterUsuarioIdDoToken(token) {
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+        return payload.sub || null;
     } catch {
         return null;
     }
@@ -17,17 +37,30 @@ async function getUsuario() {
 
 async function fetchTarefas(userId) {
     const token = await getToken();
-    const response = await fetch(`${API_BASE_URL}/tarefas/usuario/${encodeURIComponent(userId)}/TODOS`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+    const url = `${API_BASE_URL}/tarefas/usuario/${encodeURIComponent(userId)}/TODOS?_=${Date.now()}`;
+    const response = await fetch(url, {
+        cache: 'no-store',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Cache-Control': 'no-cache'
+        }
     });
     const payload = await response.json();
+    const materiasCount = response.headers.get('X-Gnosis-Materias-Count');
+    const build = response.headers.get('X-Gnosis-Build');
+    console.log('[Gnosis Oracle] tarefas carregadas', {
+        status: response.status,
+        build,
+        materiasCount,
+        tarefas: Array.isArray(payload.data) ? payload.data.length : 0
+    });
+
     if (!response.ok || !payload.success) throw new Error(payload.message || 'Erro ao buscar tarefas');
     return Array.isArray(payload.data) ? payload.data : [];
 }
 
 async function atualizarStatus(tarefa, novoStatus) {
     const token = await getToken();
-    const idMaterias = (tarefa.materias || []).map(m => m?.id || m?.idMateria).filter(Boolean);
 
     const response = await fetch(`${API_BASE_URL}/tarefas/activities/${encodeURIComponent(tarefa.id)}`, {
         method: 'PUT',
@@ -36,12 +69,7 @@ async function atualizarStatus(tarefa, novoStatus) {
             'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-            titulo: tarefa.titulo || 'Sem titulo',
-            descricao: tarefa.descricao || 'Sem descricao',
-            status: novoStatus,
-            data_vencimento: tarefa.data_vencimento || tarefa.data_entrega || undefined,
-            hora_vencimento: tarefa.hora_vencimento || undefined,
-            idMaterias: idMaterias.length > 0 ? idMaterias : undefined
+            status: novoStatus
         })
     });
 
@@ -52,6 +80,7 @@ async function atualizarStatus(tarefa, novoStatus) {
 async function login(email, senha) {
     const response = await fetch(`${API_BASE_URL}/login`, {
         method: 'POST',
+        credentials: 'omit',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, senha })
     });
@@ -61,12 +90,29 @@ async function login(email, senha) {
 }
 
 async function salvarSessao(token, usuario) {
-    await chrome.cookies.set({ url: API_BASE_URL, name: 'gnosis_token', value: token, path: '/' });
-    await chrome.cookies.set({ url: API_BASE_URL, name: 'gnosis_user', value: encodeURIComponent(JSON.stringify(usuario)), path: '/' });
+    await limparSessao();
+
+    const tokenUserId = obterUsuarioIdDoToken(token);
+    const usuarioNormalizado = {
+        ...usuario,
+        id: tokenUserId || usuario?.id
+    };
+
+    await chrome.cookies.set({ url: API_ORIGIN, name: 'gnosis_token', value: token, path: '/' });
+    await chrome.cookies.set({ url: API_ORIGIN, name: 'gnosis_user', value: encodeURIComponent(JSON.stringify(usuarioNormalizado)), path: '/' });
+
+    return usuarioNormalizado;
 }
 
 async function limparSessao() {
-    await chrome.cookies.remove({ url: API_BASE_URL, name: 'gnosis_token' });
-    await chrome.cookies.remove({ url: API_BASE_URL, name: 'gnosis_user' });
-    chrome.storage.local.remove(['tarefas_notificadas']);
+    const cookies = await chrome.cookies.getAll({ domain: 'localhost' });
+    await Promise.all(
+        cookies
+            .filter(cookie => SESSION_COOKIE_NAMES.includes(cookie.name))
+            .map(cookie => chrome.cookies.remove({
+                url: `${cookie.secure ? 'https' : 'http'}://${cookie.domain.replace(/^\./, '')}${cookie.path}`,
+                name: cookie.name
+            }))
+    );
+    await chrome.storage.local.remove(['tarefas_notificadas']);
 }

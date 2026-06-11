@@ -17,7 +17,9 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node src/app.js"
+    "dev": "node src/app.js",
+    "diagnose:materias": "node scripts/diagnose-materias.js",
+    "test:materias": "node scripts/diagnose-materias.js"
   },
   "repository": {
     "type": "git",
