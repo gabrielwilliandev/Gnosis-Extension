@@ -10,6 +10,7 @@ const materiaRoutes = require('./routes/materiaRoutes');
 const errorHandler = require('./middlewares/errorHandler');
 const app = express();
 const BUILD_ID = 'materias-hydration-v2';
+const APP_VERSION = process.env.APP_VERSION || 'local';
 
 app.use(cors());
 app.use(express.json());
@@ -32,12 +33,13 @@ app.use('/api/materias', materiaRoutes);
 
 // Rota de saúde só para garantir que o Express não quebrou ao iniciar
 app.get('/api/health', (req, res) => {
-    res.status(200).json({ status: 'Servidor no ar!', build: BUILD_ID });
+    res.status(200).json({ status: 'Servidor no ar!', build: BUILD_ID, version: APP_VERSION });
 });
 
 app.get('/api/debug/build', (req, res) => {
     res.status(200).json({
         build: BUILD_ID,
+        version: APP_VERSION,
         cwd: process.cwd(),
         appFile: __filename,
         tarefaController: require.resolve('./controllers/TarefaController.js'),
