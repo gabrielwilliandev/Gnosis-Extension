@@ -16,6 +16,11 @@ class TarefaController {
         const ano_mes = req.params.ano_mes || 'TODOS';
         
         const tarefas = await TarefaService.listarPorUsuario(user_id, ano_mes);
+        const totalMaterias = Array.isArray(tarefas)
+            ? tarefas.reduce((total, tarefa) => total + (Array.isArray(tarefa.materias) ? tarefa.materias.length : 0), 0)
+            : 0;
+
+        res.set('X-Gnosis-Materias-Count', String(totalMaterias));
 
         if (!tarefas || tarefas.length === 0) {
             return res.status(200).json(

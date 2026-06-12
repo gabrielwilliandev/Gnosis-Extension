@@ -220,11 +220,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const token = data?.token;
             const usuario = data?.usuario;
 
-            await salvarSessao(token, usuario);
+            const usuarioSessao = await salvarSessao(token, usuario);
 
-            chrome.runtime.sendMessage({ acao: 'INICIAR_MONITORAMENTO', token, userId: usuario.id });
-            mostrarTelaTarefas(usuario);
-            buscarTarefas(usuario.id);
+            chrome.runtime.sendMessage({ acao: 'INICIAR_MONITORAMENTO', token, userId: usuarioSessao.id });
+            mostrarTelaTarefas(usuarioSessao);
+            buscarTarefas(usuarioSessao.id);
         } catch (error) {
             alert(error.message || 'Erro ao conectar.');
         } finally {
