@@ -1,5 +1,4 @@
-const API_ORIGIN = 'https://gnosis-api.whitesmoke-57ad5be1.eastus.azurecontainerapps.io';
-const API_BASE_URL = `${API_ORIGIN}/api`;
+const API_BASE_URL = 'https://gnosis-api.whitesmoke-57ad5be1.eastus.azurecontainerapps.io/api';
 
 const GATILHOS = [
     { horas: 1,   chave: '1h',  mensagem: 'Falta apenas 1 hora!' },
@@ -11,8 +10,8 @@ const GATILHOS = [
 
 async function getSessao() {
     const [cookieUser, cookieToken] = await Promise.all([
-        chrome.cookies.get({ url: API_ORIGIN, name: 'gnosis_user' }),
-        chrome.cookies.get({ url: API_ORIGIN, name: 'gnosis_token' })
+        chrome.cookies.get({ url: API_BASE_URL, name: 'gnosis_user' }),
+        chrome.cookies.get({ url: API_BASE_URL, name: 'gnosis_token' })
     ]);
 
     let userId = null;
@@ -24,14 +23,8 @@ async function getSessao() {
 }
 
 async function buscarPendentes(userId, token) {
-    const url = `${API_BASE_URL}/tarefas/usuario/${encodeURIComponent(userId)}/pendentes?_=${Date.now()}`;
-    const response = await fetch(url, {
-        cache: 'no-store',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            'Cache-Control': 'no-cache'
-        }
+    const response = await fetch(`${API_BASE_URL}/tarefas/usuario/${encodeURIComponent(userId)}/pendentes`, {
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
     });
     const payload = await response.json();
     if (!response.ok || !payload.success) throw new Error(payload.message || 'Falha na API');
@@ -42,37 +35,13 @@ function resolverGatilho(horasRestantes) {
     return GATILHOS.find(g => horasRestantes <= g.horas) || null;
 }
 
-function extrairNomesMaterias(valor) {
-    if (!valor) return [];
-    if (typeof valor === 'string') return [valor];
-
-    if (Array.isArray(valor)) {
-        return valor.flatMap(extrairNomesMaterias);
-    }
-
-    const nomesDiretos = [
-        valor.nome,
-        valor.nome_materia,
-        valor.materia_nome
-    ].filter(Boolean);
-
-    return [
-        ...nomesDiretos,
-        ...extrairNomesMaterias(valor.materia),
-        ...extrairNomesMaterias(valor.materias)
-    ];
-}
-
 function obterDisciplinaNotificacao(tarefa) {
-    const materias = [
-        ...extrairNomesMaterias(tarefa.materias),
-        ...extrairNomesMaterias(tarefa.tarefas_materias),
-        ...extrairNomesMaterias(tarefa.tarefa_materia),
-        ...extrairNomesMaterias(tarefa.disciplina),
-        ...extrairNomesMaterias(tarefa.materia)
-    ].map((nome) => String(nome).trim()).filter(Boolean);
-
-    return [...new Set(materias)].join(', ').toUpperCase() || 'GNOSIS ORACLE';
+    const arr = tarefa.materias || tarefa.tarefas_materias || tarefa.tarefa_materia || [];
+    if (!Array.isArray(arr) || arr.length === 0) return 'GNOSIS ORACLE';
+    return arr.map((m) => {
+        if (Array.isArray(m)) m = m[0];
+        return m?.nome || m?.materia?.nome || m?.materias?.nome || m?.nome_materia;
+    }).filter(Boolean).join(', ').toUpperCase() || 'GNOSIS ORACLE';
 }
 
 function dispararNotificacao(tarefa, mensagemPrazo) {
