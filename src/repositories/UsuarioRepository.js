@@ -37,7 +37,15 @@ class UsuarioRepository {
                 await supabaseAuth.auth.admin.deleteUser(authUserId);
             }
 
-            throw new AppError(`Erro no processo de cadastro: ${error.message}`, 400, 'USER_REGISTRATION_ERROR');
+            if (error.message === 'User already registered') {
+                throw new AppError('Este e-mail já está cadastrado.', 400, 'USER_ALREADY_REGISTERED');
+            }
+
+            if (error.message.includes('Password should be at least')) {
+                throw new AppError('A senha deve possuir pelo menos 6 caracteres.', 400, 'PASSWORD_TOO_SHORT');
+            }
+
+            throw new AppError('Erro ao cadastrar usuário.', 400, 'REGISTER_ERROR');   
         }
     }
 
