@@ -117,7 +117,6 @@ function inicializarLogin() {
             });
 
             const data = await response.json();
-
             if (!response.ok) throw new Error(data.erro || data.message || "Credenciais inválidas");
 
 
@@ -285,8 +284,11 @@ function montarCalendario(mes, ano) {
             html_habilitado = `onclick="exibir_cadastrar_atividade('${data_vencimento}');"`;
             background = '';
         }
-        html += `<td id="td_${data_vencimento}"  ${html_habilitado} data-bs-toggle="modal" style="cursor: pointer; ${background}">
-        <span style="font-size: 14px; font-weight: bold;">${dia}<button type="button" id="qtd_tarefas_${data_vencimento}" class="contador-tarefas d-none" onclick="exibir_tarefas(event, '${data_vencimento}');"></button></span></td>`;
+        html += `<td id="td_${data_vencimento}"  ${html_habilitado} data-bs-toggle="modal" style="cursor: pointer; ${background} max-width: 0; overflow: visible; position: relative;">
+            <div class="td-conteudo">
+                <span style="font-size: 14px; font-weight: bold;">${dia}<button type="button" id="qtd_tarefas_${data_vencimento}" class="contador-tarefas d-none" onclick="exibir_tarefas(event, '${data_vencimento}');"></button></span>
+            </div>
+        </td>`;
 
 
         contadorSemana++;
@@ -442,7 +444,7 @@ function listar_atividades(mes_ano){
                 tarefas.forEach(t => {
                     // BUSCAR O TD - EX: td_${ano}-${mes}-${diaF}         
                     const data_vencimento = t.data_vencimento.split('T')[0];       
-                    const td_dia = $(`#td_${data_vencimento}`);
+                    const td_dia = $(`#td_${data_vencimento} .td-conteudo`);
                     
                     let cor;
                     let texto_cor;
@@ -498,8 +500,7 @@ function listar_atividades(mes_ano){
                     const evento = diferencaDias >= 0 ? `onclick="exibir_atividade(event, ${t.id});"` : '';
 
                     if (qtd <= 2){ 
-                        // lucas
-                        td_dia.append(`<span class="atividades_${data_vencimento}" ${evento}   style="z-index: 1; display: block;margin: 2px 4px;padding: 3px 6px;border-radius: 6px;background-color: ${cor};color: ${texto_cor};font-size: 12px;font-weight: 500;white-space: nowrap;text-overflow: ellipsis;cursor: pointer; overflow:hidden; white-space:nowrap; width: 115px;  ${tachado}">${escapeHtml(t.titulo)}</span>`);
+                        td_dia.append(`<span class="atividades_${data_vencimento}" ${evento}   style="z-index: 1; display: block;margin: 2px 4px;padding: 3px 6px;border-radius: 6px;background-color: ${cor};color: ${texto_cor};font-size: 12px;font-weight: 500;white-space: nowrap;text-overflow: ellipsis;cursor: pointer; overflow:hidden; white-space:nowrap; ${tachado}">${escapeHtml(t.titulo)}</span>`);
                     }
                     // Exibindo a quantidade de tarefas por dia
                     const campo_qtd_tarefas_dias = document.getElementById(`qtd_tarefas_${data_vencimento}`);
@@ -802,8 +803,12 @@ function exibir_cadastrar_materia(){
 }
 
 function carregarMaterias() {
-    const select = document.getElementById('idMaterias_cadastrar_atividade');
-    if (!select) return;
+    const selects = [
+        document.getElementById('idMaterias_cadastrar_atividade'),
+        document.getElementById('idMaterias_editar_atividade')
+    ].filter(Boolean);
+
+    if(selects.length === 0) return;
 
     const cookieDados = obterCookie('gnosis_user');
     if (!cookieDados) {
@@ -830,13 +835,15 @@ function carregarMaterias() {
     .then(response => {
         if (response.success) {
             const materias = response.data || [];
-            select.innerHTML = '<option value="" selected disabled>Escolha uma matéria</option>';
-            materias.forEach(materia => {
-                const option = document.createElement('option');
-                option.value = materia.idMateria || materia.id;
-                option.text = materia.nome;
-                select.appendChild(option);
-            });
+            selects.forEach(select => {
+                select.innerHTML = '<option value="" selected disabled>Escolha uma matéria</option>';
+                materias.forEach(materia => {
+                    const option = document.createElement('option');
+                    option.value = materia.idMateria || materia.id;
+                    option.text = materia.nome;
+                    select.appendChild(option);
+                });
+            });           
         } else {
             console.error('Erro mapeado pelo servidor:', response.message);
         }
@@ -896,20 +903,13 @@ function inicializarFormularios() {
                 formMateria.reset();
 
                 const modalElement = document.getElementById('cadastrar_materia');
-                if (modalElement) {
-                    const modalInstance = new bootstrap.Modal('#cadastrar_materia');
-                    //const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                if (modalElement) {                    
+                    const modalInstance = bootstrap.Modal.getInstance(modalElement);
                     if (modalInstance) modalInstance.hide();
                 }
 
                 // Reseta o foco de forma limpa para a modal pai
-                setTimeout(() => {
-                    const modalAtividade = document.getElementById('cadastrar_atividade');
-                    if (modalAtividade) {
-                        const instanciaAtividade = bootstrap.Modal.getInstance(modalAtividade) 
-                            || new bootstrap.Modal(modalAtividade);
-                        instanciaAtividade.show();
-                    }
+                setTimeout(() => {                   
                     carregarMaterias(); 
                 }, 400);
 
