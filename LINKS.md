@@ -38,6 +38,28 @@ O workflow de producao publica a imagem no ACR e atualiza o Azure Container App.
 - `AZURE_RESOURCE_GROUP`
 
 `AZURE_CREDENTIALS` deve ser o JSON de login de um service principal com permissao para atualizar o Container App.
+O formato esperado e:
+
+```json
+{
+  "clientId": "...",
+  "clientSecret": "...",
+  "subscriptionId": "...",
+  "tenantId": "..."
+}
+```
+
+Se voce criou o service principal pelo Azure CLI sem `--sdk-auth`, talvez tenha recebido campos como `appId`, `password` e `tenant`.
+Nesse caso, monte o secret assim:
+
+```json
+{
+  "clientId": "<appId>",
+  "clientSecret": "<password>",
+  "subscriptionId": "<id-da-subscription>",
+  "tenantId": "<tenant>"
+}
+```
 
 ## Azure
 

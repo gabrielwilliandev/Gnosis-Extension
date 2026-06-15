@@ -41,6 +41,19 @@ jobs:
             ${{ steps.image.outputs.sha_tag }}
             ${{ steps.image.outputs.latest_tag }}
 
+      - name: Validar credenciais do Azure
+        env:
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+        run: |
+          node -e "
+            const creds = JSON.parse(process.env.AZURE_CREDENTIALS || '{}');
+            const required = ['clientId', 'clientSecret', 'subscriptionId', 'tenantId'];
+            const missing = required.filter((key) => !creds[key]);
+            if (missing.length) {
+              throw new Error('AZURE_CREDENTIALS incompleto. Campos ausentes: ' + missing.join(', '));
+            }
+          "
+
       - name: Login no Azure
         uses: azure/login@v2
         with:
