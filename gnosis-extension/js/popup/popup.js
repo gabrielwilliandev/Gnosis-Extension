@@ -22,9 +22,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let termoBusca = '';
     let filtroPeriodo = 'todos'; 
     let materiasSelecionadas = []; 
+    let avisoSessaoTimer = null;
 
     init();
     configurarEventosFiltro();
+    configurarEventoSessaoExpirada();
 
     async function init() {
         const usuario = await getUsuario();
@@ -77,6 +79,40 @@ document.addEventListener('DOMContentLoaded', () => {
     function mostrarTelaLogin() {
         viewTarefas.classList.add('d-none');
         viewLogin.classList.remove('d-none');
+    }
+
+    function mostrarAvisoSessaoExpirada(mensagem) {
+        clearTimeout(avisoSessaoTimer);
+        taskListContainer.innerHTML = `
+            <div class="text-center mt-4 text-danger small">
+                ${mensagem || 'Sua sessao expirou. Faca login novamente.'}
+            </div>`;
+        avisoSessaoTimer = setTimeout(() => {
+            mostrarTelaLogin();
+        }, 1800);
+    }
+
+    function resetarEstadoSessao() {
+        inputEmail.value = '';
+        inputSenha.value = '';
+        tarefasCache = [];
+        filtroAtual = 'todas';
+        termoBusca = '';
+        searchInput.value = '';
+        filtroPeriodo = 'todos';
+        materiasSelecionadas = [];
+        selectPeriodo.value = 'todos';
+        atualizarEstiloBotaoFiltro();
+        tabs.forEach((t) => t.classList.remove('active'));
+        if (tabs.length > 0) tabs[0].classList.add('active');
+    }
+
+    function configurarEventoSessaoExpirada() {
+        window.addEventListener('gnosis:sessao-expirada', (event) => {
+            resetarEstadoSessao();
+            chrome.runtime.sendMessage({ acao: 'PARAR_MONITORAMENTO' });
+            mostrarAvisoSessaoExpirada(event.detail?.message);
+        });
     }
 
     function mostrarTelaTarefas(usuario) {
@@ -137,6 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             atualizarView();
         } catch (error) {
+            if (error?.name === 'SessaoExpiradaError') return;
             taskListContainer.innerHTML = `
                 <div class="text-center mt-4 text-danger small">
                     Falha ao carregar a constelacao.<br>${error.message || 'Verifique se a API esta online.'}
@@ -157,6 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         } catch (err) {
+            if (err?.name === 'SessaoExpiradaError') return;
             alert(`Erro ao atualizar: ${err.message}`);
         }
     }
@@ -218,9 +256,10 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const data = await login(email, senha);
             const token = data?.token;
+            const refreshToken = data?.refreshToken;
             const usuario = data?.usuario;
 
-            const usuarioSessao = await salvarSessao(token, usuario);
+            await salvarSessao(token, usuario, refreshToken);
 
             chrome.runtime.sendMessage({ acao: 'INICIAR_MONITORAMENTO', token, userId: usuarioSessao.id });
             mostrarTelaTarefas(usuarioSessao);

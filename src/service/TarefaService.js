@@ -6,57 +6,29 @@ const ValidationError = require('../errors/ValidationError');
 const Notification = require('../utils/Notification');
 const Validar = require('../validate/ValidateTarefa.js')
 
-function normalizarMateria(relacao) {
-    if (!relacao) return null;
-    if (Array.isArray(relacao)) return normalizarMateria(relacao[0]);
-    if (typeof relacao === 'string') return { nome: relacao };
-
-    return relacao.materias
-        || relacao.materia
-        || relacao.nome_materia && { nome: relacao.nome_materia }
-        || relacao.nome && relacao
-        || null;
+function normalizarStatus(status) {
+    return String(status || '').trim().toLowerCase();
 }
 
-async function hidratarMaterias(tarefas) {
-    if (!Array.isArray(tarefas) || tarefas.length === 0) return tarefas;
+function montarDataHoraVencimento(tarefa) {
+    const dataVencimento = tarefa?.data_vencimento;
+    if (!dataVencimento) return null;
 
-    const idsTarefas = tarefas.map((tarefa) => tarefa.id).filter(Boolean);
-    if (idsTarefas.length === 0) return tarefas;
+    const dataTexto = String(dataVencimento).slice(0, 10);
+    const [ano, mes, dia] = dataTexto.split('-').map(Number);
 
-    const { data, error } = await supabase
-        .from('tarefas_materias')
-        .select(`
-            tarefa_id,
-            materias (id, nome)
-        `)
-        .in('tarefa_id', idsTarefas);
+    if (!ano || !mes || !dia) return null;
 
-    if (error) {
-        throw new AppError(`Erro ao buscar materias das tarefas: ${error.message}`, 400, 'TASK_SUBJECT_FETCH_ERROR');
-    }
+    const horaTexto = tarefa.hora_vencimento || '23:59:59';
+    const [hora = 23, minuto = 59, segundo = 59] = String(horaTexto).split(':').map(Number);
 
-    const materiasPorTarefa = (data || []).reduce((mapa, relacao) => {
-        const materia = normalizarMateria(relacao);
-        if (!materia) return mapa;
+    const vencimento = new Date(ano, mes - 1, dia, hora || 0, minuto || 0, segundo || 0);
+    return Number.isNaN(vencimento.getTime()) ? null : vencimento;
+}
 
-        const materias = mapa.get(relacao.tarefa_id) || [];
-        materias.push(materia);
-        mapa.set(relacao.tarefa_id, materias);
-        return mapa;
-    }, new Map());
-
-    return tarefas.map((tarefa) => {
-        const materiasHidratadas = materiasPorTarefa.get(tarefa.id) || [];
-        const materiasAtuais = Array.isArray(tarefa.materias)
-            ? tarefa.materias.map(normalizarMateria).filter(Boolean)
-            : [];
-
-        return {
-            ...tarefa,
-            materias: materiasHidratadas.length > 0 ? materiasHidratadas : materiasAtuais
-        };
-    });
+function tarefaEstaVencida(tarefa) {
+    const vencimento = montarDataHoraVencimento(tarefa);
+    return vencimento ? vencimento < new Date() : false;
 }
 
 class TarefaService {
@@ -104,6 +76,20 @@ class TarefaService {
         const dadosTarefa = Object.fromEntries(
             Object.entries(dadosRecebidos).filter(([, value]) => value !== undefined)
         );
+
+        if (Object.prototype.hasOwnProperty.call(dadosTarefa, 'status')) {
+            const tarefaAtual = await TarefaRepository.buscarPorId(id);
+            const statusAtual = normalizarStatus(tarefaAtual.status);
+            const novoStatus = normalizarStatus(dadosTarefa.status);
+
+            if (novoStatus && novoStatus !== statusAtual && tarefaEstaVencida(tarefaAtual)) {
+                throw new AppError(
+                    'Nao e possivel alterar o status de uma tarefa vencida.',
+                    409,
+                    'TASK_STATUS_LOCKED'
+                );
+            }
+        }
 
         const { data, error } = await supabase
             .from('tarefas')

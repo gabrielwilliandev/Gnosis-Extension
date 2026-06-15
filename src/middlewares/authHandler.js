@@ -1,8 +1,11 @@
 const jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
+const env = require('../config/env');
+
+const supabaseAuthUrl = `${env.supabaseUrl}/auth/v1`;
 
 const client = jwksClient({
-    jwksUri: 'https://tgjndyfcwnupaafuonmv.supabase.co/auth/v1/.well-known/jwks.json',
+    jwksUri: `${supabaseAuthUrl}/.well-known/jwks.json`,
     cache: true,
     rateLimit: true,
     jwksRequestsPerMinute: 10
@@ -32,7 +35,7 @@ module.exports = (req, res, next) => {
 
     jwt.verify(token, getKey, {
         algorithms: ['ES256'],
-        issuer: 'https://tgjndyfcwnupaafuonmv.supabase.co/auth/v1',
+        issuer: supabaseAuthUrl,
         audience: 'authenticated'
     }, (err, decoded) => {
         if (err) {

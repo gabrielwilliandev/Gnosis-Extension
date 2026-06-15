@@ -42,6 +42,16 @@ class UsuarioService {
 
         return await UsuarioRepository.login(email, senha);
     }
+
+    static async refreshSession(refreshToken) {
+        if (!refreshToken) {
+            throw new ValidationError('Falha ao renovar sessao.', [
+                { field: 'refreshToken', message: 'O refresh token e obrigatorio.' }
+            ]);
+        }
+
+        return await UsuarioRepository.refreshSession(refreshToken);
+    }
 }
 
 module.exports = UsuarioService;

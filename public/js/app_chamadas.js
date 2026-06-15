@@ -30,6 +30,77 @@ function carregarDependencias() {
 carregarDependencias();
 
 const API_BASE_URL = 'https://gnosis-api.whitesmoke-57ad5be1.eastus.azurecontainerapps.io/api';
+let redirecionandoPorSessaoExpirada = false;
+
+function exibirAvisoSessaoExpirada(mensagem) {
+    let aviso = document.getElementById('aviso-sessao-expirada');
+    if (!aviso) {
+        aviso = document.createElement('div');
+        aviso.id = 'aviso-sessao-expirada';
+        aviso.setAttribute('role', 'alert');
+        aviso.style.position = 'fixed';
+        aviso.style.top = '20px';
+        aviso.style.left = '50%';
+        aviso.style.transform = 'translateX(-50%)';
+        aviso.style.zIndex = '9999';
+        aviso.style.maxWidth = '420px';
+        aviso.style.width = 'calc(100% - 32px)';
+        aviso.style.padding = '14px 18px';
+        aviso.style.borderRadius = '8px';
+        aviso.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.18)';
+        aviso.style.background = '#2f3542';
+        aviso.style.color = '#fff';
+        aviso.style.fontWeight = '600';
+        aviso.style.textAlign = 'center';
+        document.body.appendChild(aviso);
+    }
+
+    aviso.textContent = mensagem;
+}
+
+async function redirecionarParaLoginPorSessaoExpirada(mensagem = 'Sua sessao expirou. Faca login novamente.') {
+    if (redirecionandoPorSessaoExpirada) return;
+    redirecionandoPorSessaoExpirada = true;
+
+    exibirAvisoSessaoExpirada(mensagem);
+    document.cookie = 'gnosis_user=; Max-Age=0; path=/';
+
+    try {
+        await window.fetch(`${API_BASE_URL}/logout`, {
+            method: 'POST',
+            credentials: 'include'
+        });
+    } catch {}
+
+    setTimeout(() => {
+        window.location.href = '/';
+    }, 2500);
+}
+
+function monitorarSessaoExpirada() {
+    const fetchOriginal = window.fetch.bind(window);
+
+    window.fetch = async (input, init) => {
+        const response = await fetchOriginal(input, init);
+        const url = typeof input === 'string' ? input : input?.url || '';
+        const chamadaApi = url.startsWith(API_BASE_URL) || url.startsWith('/api');
+        const rotaAutenticacao = url.includes('/login') || url.includes('/logout');
+
+        if (response.status === 401 && chamadaApi && !rotaAutenticacao) {
+            let mensagem = 'Sua sessao expirou. Faca login novamente.';
+            try {
+                const payload = await response.clone().json();
+                mensagem = payload.message || mensagem;
+            } catch {}
+
+            redirecionarParaLoginPorSessaoExpirada(mensagem);
+        }
+
+        return response;
+    };
+}
+
+monitorarSessaoExpirada();
 
 // --- INICIALIZAÇÃO DO SISTEMA ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -285,11 +356,8 @@ function montarCalendario(mes, ano) {
             html_habilitado = `onclick="exibir_cadastrar_atividade('${data_vencimento}');"`;
             background = '';
         }
-        html += `<td id="td_${data_vencimento}"  ${html_habilitado} data-bs-toggle="modal" style="cursor: pointer; ${background} max-width: 0; overflow: visible; position: relative;">
-            <div class="td-conteudo">
-                <span style="font-size: 14px; font-weight: bold;">${dia}<button type="button" id="qtd_tarefas_${data_vencimento}" class="contador-tarefas d-none" onclick="exibir_tarefas(event, '${data_vencimento}');"></button></span>
-            </div>
-        </td>`;
+        html += `<td id="td_${data_vencimento}"  ${html_habilitado} data-bs-toggle="modal" style="cursor: pointer; ${background}">
+        <span style="font-size: 14px; font-weight: bold;">${dia}<button type="button" id="qtd_tarefas_${data_vencimento}" class="contador-tarefas d-none" onclick="exibir_tarefas(event, '${data_vencimento}');"></button></span></td>`;
 
 
         contadorSemana++;
@@ -445,7 +513,7 @@ function listar_atividades(mes_ano){
                 tarefas.forEach(t => {
                     // BUSCAR O TD - EX: td_${ano}-${mes}-${diaF}         
                     const data_vencimento = t.data_vencimento.split('T')[0];       
-                    const td_dia = $(`#td_${data_vencimento} .td-conteudo`);
+                    const td_dia = $(`#td_${data_vencimento}`);
                     
                     let cor;
                     let texto_cor;
@@ -501,7 +569,8 @@ function listar_atividades(mes_ano){
                     const evento = diferencaDias >= 0 ? `onclick="exibir_atividade(event, ${t.id});"` : '';
 
                     if (qtd <= 2){ 
-                        td_dia.append(`<span class="atividades_${data_vencimento}" ${evento}   style="z-index: 1; display: block;margin: 2px 4px;padding: 3px 6px;border-radius: 6px;background-color: ${cor};color: ${texto_cor};font-size: 12px;font-weight: 500;white-space: nowrap;text-overflow: ellipsis;cursor: pointer; overflow:hidden; white-space:nowrap; ${tachado}">${escapeHtml(t.titulo)}</span>`);
+                        // lucas
+                        td_dia.append(`<span class="atividades_${data_vencimento}" ${evento}   style="z-index: 1; display: block;margin: 2px 4px;padding: 3px 6px;border-radius: 6px;background-color: ${cor};color: ${texto_cor};font-size: 12px;font-weight: 500;white-space: nowrap;text-overflow: ellipsis;cursor: pointer; overflow:hidden; white-space:nowrap; width: 115px;  ${tachado}">${escapeHtml(t.titulo)}</span>`);
                     }
                     // Exibindo a quantidade de tarefas por dia
                     const campo_qtd_tarefas_dias = document.getElementById(`qtd_tarefas_${data_vencimento}`);
@@ -804,12 +873,8 @@ function exibir_cadastrar_materia(){
 }
 
 function carregarMaterias() {
-   const selects = [
-        document.getElementById('idMaterias_cadastrar_atividade'),
-        document.getElementById('idMaterias_editar_atividade')
-    ].filter(Boolean);
-
-    if(selects.length === 0) return;
+    const select = document.getElementById('idMaterias_cadastrar_atividade');
+    if (!select) return;
 
     const cookieDados = obterCookie('gnosis_user');
     if (!cookieDados) {
@@ -836,15 +901,13 @@ function carregarMaterias() {
     .then(response => {
         if (response.success) {
             const materias = response.data || [];
-            selects.forEach(select => {
-                select.innerHTML = '<option value="" selected disabled>Escolha uma matéria</option>';
-                materias.forEach(materia => {
-                    const option = document.createElement('option');
-                    option.value = materia.idMateria || materia.id;
-                    option.text = materia.nome;
-                    select.appendChild(option);
-                });
-            });     
+            select.innerHTML = '<option value="" selected disabled>Escolha uma matéria</option>';
+            materias.forEach(materia => {
+                const option = document.createElement('option');
+                option.value = materia.idMateria || materia.id;
+                option.text = materia.nome;
+                select.appendChild(option);
+            });
         } else {
             console.error('Erro mapeado pelo servidor:', response.message);
         }
@@ -904,13 +967,20 @@ function inicializarFormularios() {
                 formMateria.reset();
 
                 const modalElement = document.getElementById('cadastrar_materia');
-               if (modalElement) {                    
-                    const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                if (modalElement) {
+                    const modalInstance = new bootstrap.Modal('#cadastrar_materia');
+                    //const modalInstance = bootstrap.Modal.getInstance(modalElement);
                     if (modalInstance) modalInstance.hide();
                 }
 
                 // Reseta o foco de forma limpa para a modal pai
                 setTimeout(() => {
+                    const modalAtividade = document.getElementById('cadastrar_atividade');
+                    if (modalAtividade) {
+                        const instanciaAtividade = bootstrap.Modal.getInstance(modalAtividade) 
+                            || new bootstrap.Modal(modalAtividade);
+                        instanciaAtividade.show();
+                    }
                     carregarMaterias(); 
                 }, 400);
 

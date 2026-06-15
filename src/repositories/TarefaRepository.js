@@ -144,6 +144,21 @@ class TarefaRepository {
         const materiasPorTarefa = await buscarMateriasPorTarefas(data || []);
         return data.map((tarefa) => mapearTarefaComMaterias(tarefa, materiasPorTarefa));
     }
+
+    static async buscarPorId(id) {
+        const { data, error } = await supabase
+            .from('tarefas')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if (error) {
+            throw new AppError(`Erro ao buscar tarefa: ${error.message}`, 400, 'TASK_FETCH_ERROR');
+        }
+
+        return data;
+    }
+
     static async deletar(id) {
     const { data, error } = await supabase
         .from('tarefas')
