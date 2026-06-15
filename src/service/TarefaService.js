@@ -50,8 +50,7 @@ class TarefaService {
         if(!ano_mes){
             ano_mes = 'TODOS';
         }
-        const tarefas = await TarefaRepository.buscarPorUsuario(userId, ano_mes);
-        return await hidratarMaterias(tarefas);
+        return await TarefaRepository.buscarPorUsuario(userId, ano_mes);
     }
 
     static async listarPendentes(userId) {
@@ -61,8 +60,7 @@ class TarefaService {
             ]);
         }
 
-        const tarefas = await TarefaRepository.buscarPendentesPorUsuario(userId);
-        return await hidratarMaterias(tarefas);
+        return await TarefaRepository.buscarPendentesPorUsuario(userId);
     }
 
     static async atualizar(id, dados) {
@@ -158,8 +156,7 @@ class TarefaService {
             throw new ValidationError('Falha ao buscar tarefa.', notification.getErrors());
         }
 
-        const tarefas = await TarefaRepository.buscarSelecionadaPorUsuario(userId, tarefaId);
-        return await hidratarMaterias(tarefas);
+        return await TarefaRepository.buscarSelecionadaPorUsuario(userId, tarefaId);
     }
     static async deletar(id) {
     if (!id) {
