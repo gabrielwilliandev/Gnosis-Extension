@@ -125,11 +125,15 @@ function dispararNotificacao(tarefa, mensagemPrazo) {
 
     chrome.notifications.create({
         type: 'basic',
-        iconUrl: 'icons/icon-128.png',
+        iconUrl: chrome.runtime.getURL('icons/icon-128.png'),
         title: obterDisciplinaNotificacao(tarefa),
         message: `${tarefa.titulo}\nPrazo: ${prazoFormatado}\n${mensagemPrazo}`,
         priority: 2,
         requireInteraction: true
+    }, () => {
+        if (chrome.runtime.lastError) {
+            console.error('[Gnosis Oracle] Erro ao criar notificacao:', chrome.runtime.lastError.message);
+        }
     });
 }
 
