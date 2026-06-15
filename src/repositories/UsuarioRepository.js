@@ -1,4 +1,5 @@
 const supabase = require('../config/supabase');
+const { supabaseAuth } = require('../config/supabase');
 const AppError = require('../errors/AppError');
 
 class UsuarioRepository {
@@ -6,7 +7,7 @@ class UsuarioRepository {
         let authUserId = null;
 
         try {
-            const { data: authData, error: authError } = await supabase.auth.signUp({
+            const { data: authData, error: authError } = await supabaseAuth.auth.signUp({
                 email: usuarioEntity.email,
                 password: usuarioEntity.senha
             });
@@ -33,16 +34,24 @@ class UsuarioRepository {
             return data;
         } catch (error) {
             if (authUserId) {
-                await supabase.auth.admin.deleteUser(authUserId);
+                await supabaseAuth.auth.admin.deleteUser(authUserId);
             }
 
-            throw new AppError(`Erro no processo de cadastro: ${error.message}`, 400, 'USER_REGISTRATION_ERROR');
+            if (error.message === 'User already registered') {
+                throw new AppError('Este e-mail já está cadastrado.', 400, 'USER_ALREADY_REGISTERED');
+            }
+
+            if (error.message.includes('Password should be at least')) {
+                throw new AppError('A senha deve possuir pelo menos 6 caracteres.', 400, 'PASSWORD_TOO_SHORT');
+            }
+
+            throw new AppError('Erro ao cadastrar usuário.', 400, 'REGISTER_ERROR');   
         }
     }
 
     static async login(email, senha) {
         try {
-            const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+            const { data: authData, error: authError } = await supabaseAuth.auth.signInWithPassword({
                 email: email,
                 password: senha
             });

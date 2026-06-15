@@ -1,14 +1,39 @@
-function obterDisciplina(tarefa) {
-    const arr = tarefa.materias || tarefa.tarefas_materias || tarefa.tarefa_materia || [];
-    if (Array.isArray(arr) && arr.length > 0) {
-        const nomes = arr.map((m) => {
-            if (Array.isArray(m)) m = m[0];
-            if (typeof m === 'string') return m;
-            return m?.nome || m?.materia?.nome || m?.materias?.nome || m?.nome_materia;
-        }).filter(Boolean);
-        if (nomes.length > 0) return nomes.join(', ');
+function extrairNomesMaterias(valor) {
+    if (!valor) return [];
+    if (typeof valor === 'string') return [valor];
+
+    if (Array.isArray(valor)) {
+        return valor.flatMap(extrairNomesMaterias);
     }
-    return tarefa.disciplina || tarefa.materia || 'Geral';
+
+    const nomesDiretos = [
+        valor.nome,
+        valor.nome_materia,
+        valor.materia_nome
+    ].filter(Boolean);
+
+    return [
+        ...nomesDiretos,
+        ...extrairNomesMaterias(valor.materia),
+        ...extrairNomesMaterias(valor.materias)
+    ];
+}
+
+function obterMaterias(tarefa) {
+    const nomes = [
+        ...extrairNomesMaterias(tarefa.materias),
+        ...extrairNomesMaterias(tarefa.tarefas_materias),
+        ...extrairNomesMaterias(tarefa.tarefa_materia),
+        ...extrairNomesMaterias(tarefa.disciplina),
+        ...extrairNomesMaterias(tarefa.materia)
+    ].map((nome) => String(nome).trim()).filter(Boolean);
+
+    return [...new Set(nomes)];
+}
+
+function obterDisciplina(tarefa) {
+    const materias = obterMaterias(tarefa);
+    return materias.length > 0 ? materias.join(', ') : 'Geral';
 }
 
 function formatarData(data) {
@@ -18,7 +43,7 @@ function formatarData(data) {
 }
 
 function gerarMenuMaterias(tarefasCache, materiasSelecionadas, containerMateriasFiltro, onMudanca) {
-    const unicas = new Set(tarefasCache.map(t => obterDisciplina(t).trim()).filter(Boolean));
+    const unicas = new Set(tarefasCache.flatMap(obterMaterias).filter(Boolean));
     containerMateriasFiltro.innerHTML = '';
 
     if (unicas.size === 0) {

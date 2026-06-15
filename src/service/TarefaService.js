@@ -50,7 +50,8 @@ class TarefaService {
         if(!ano_mes){
             ano_mes = 'TODOS';
         }
-        return await TarefaRepository.buscarPorUsuario(userId, ano_mes);
+        const tarefas = await TarefaRepository.buscarPorUsuario(userId, ano_mes);
+        return await hidratarMaterias(tarefas);
     }
 
     static async listarPendentes(userId) {
@@ -60,7 +61,8 @@ class TarefaService {
             ]);
         }
 
-        return await TarefaRepository.buscarPendentesPorUsuario(userId);
+        const tarefas = await TarefaRepository.buscarPendentesPorUsuario(userId);
+        return await hidratarMaterias(tarefas);
     }
 
     static async atualizar(id, dados) {
@@ -70,10 +72,10 @@ class TarefaService {
             ]);
         }
 
-        const {
-            idMaterias,
-            ...dadosTarefa
-        } = dados;
+        const { idMaterias, ...dadosRecebidos } = dados;
+        const dadosTarefa = Object.fromEntries(
+            Object.entries(dadosRecebidos).filter(([, value]) => value !== undefined)
+        );
 
         if (Object.prototype.hasOwnProperty.call(dadosTarefa, 'status')) {
             const tarefaAtual = await TarefaRepository.buscarPorId(id);
@@ -96,7 +98,7 @@ class TarefaService {
             .select();
 
         // TABELA DE RELACIONAMENTO (Apenas atualiza se o array foi passado, evita falhas ao alterar status)
-        if (idMaterias && Array.isArray(idMaterias)) {
+        if (Array.isArray(idMaterias)) {
             const { error: deleteError } = await supabase
                 .from('tarefas_materias')
                 .delete()
@@ -156,7 +158,8 @@ class TarefaService {
             throw new ValidationError('Falha ao buscar tarefa.', notification.getErrors());
         }
 
-        return await TarefaRepository.buscarSelecionadaPorUsuario(userId, tarefaId);
+        const tarefas = await TarefaRepository.buscarSelecionadaPorUsuario(userId, tarefaId);
+        return await hidratarMaterias(tarefas);
     }
     static async deletar(id) {
     if (!id) {
