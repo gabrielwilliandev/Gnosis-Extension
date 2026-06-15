@@ -91,7 +91,7 @@ class UsuarioRepository {
 
     static async refreshSession(refreshToken) {
         try {
-            const { data, error } = await supabase.auth.refreshSession({
+            const { data, error } = await supabaseAuth.auth.refreshSession({
                 refresh_token: refreshToken
             });
 
