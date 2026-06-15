@@ -26,6 +26,19 @@ SUPABASE_KEY=...
 
 Na extensao, a troca entre local e Azure fica em `gnosis-extension/js/config.js`.
 
+## Deploy Azure
+
+O workflow de producao publica a imagem no ACR e atualiza o Azure Container App. Configure estes secrets no GitHub:
+
+- `ACR_LOGIN_SERVER`
+- `ACR_USERNAME`
+- `ACR_PASSWORD`
+- `AZURE_CREDENTIALS`
+- `AZURE_CONTAINER_APP_NAME`
+- `AZURE_RESOURCE_GROUP`
+
+`AZURE_CREDENTIALS` deve ser o JSON de login de um service principal com permissao para atualizar o Container App.
+
 ## Azure
 
 - Backend/API Azure: https://gnosis-api.whitesmoke-57ad5be1.eastus.azurecontainerapps.io
