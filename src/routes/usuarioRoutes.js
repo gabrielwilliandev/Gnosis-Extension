@@ -8,6 +8,7 @@ const authHandler = require('../middlewares/authHandler');
 
 router.post('/login', UsuarioController.login);
 router.post('/cadastrar', UsuarioController.cadastrar);
+router.post('/refresh', UsuarioController.refresh);
 router.post('/logout', UsuarioController.logout);
 
 // 2. MIDDLEWARE DE PROTEÇÃO

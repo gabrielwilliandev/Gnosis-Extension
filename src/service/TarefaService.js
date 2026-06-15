@@ -6,6 +6,31 @@ const ValidationError = require('../errors/ValidationError');
 const Notification = require('../utils/Notification');
 const Validar = require('../validate/ValidateTarefa.js')
 
+function normalizarStatus(status) {
+    return String(status || '').trim().toLowerCase();
+}
+
+function montarDataHoraVencimento(tarefa) {
+    const dataVencimento = tarefa?.data_vencimento;
+    if (!dataVencimento) return null;
+
+    const dataTexto = String(dataVencimento).slice(0, 10);
+    const [ano, mes, dia] = dataTexto.split('-').map(Number);
+
+    if (!ano || !mes || !dia) return null;
+
+    const horaTexto = tarefa.hora_vencimento || '23:59:59';
+    const [hora = 23, minuto = 59, segundo = 59] = String(horaTexto).split(':').map(Number);
+
+    const vencimento = new Date(ano, mes - 1, dia, hora || 0, minuto || 0, segundo || 0);
+    return Number.isNaN(vencimento.getTime()) ? null : vencimento;
+}
+
+function tarefaEstaVencida(tarefa) {
+    const vencimento = montarDataHoraVencimento(tarefa);
+    return vencimento ? vencimento < new Date() : false;
+}
+
 class TarefaService {
     static async cadastrar(dadosTarefa) {
         if (Validar.validartarefa(dadosTarefa)){
@@ -49,6 +74,20 @@ class TarefaService {
             idMaterias,
             ...dadosTarefa
         } = dados;
+
+        if (Object.prototype.hasOwnProperty.call(dadosTarefa, 'status')) {
+            const tarefaAtual = await TarefaRepository.buscarPorId(id);
+            const statusAtual = normalizarStatus(tarefaAtual.status);
+            const novoStatus = normalizarStatus(dadosTarefa.status);
+
+            if (novoStatus && novoStatus !== statusAtual && tarefaEstaVencida(tarefaAtual)) {
+                throw new AppError(
+                    'Nao e possivel alterar o status de uma tarefa vencida.',
+                    409,
+                    'TASK_STATUS_LOCKED'
+                );
+            }
+        }
 
         const { data, error } = await supabase
             .from('tarefas')

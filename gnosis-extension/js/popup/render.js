@@ -46,7 +46,10 @@ function gerarMenuMaterias(tarefasCache, materiasSelecionadas, containerMaterias
 
 function renderizarCard(t, onAlterarStatus) {
     const dataStr = t.data_vencimento || t.data_entrega || t.dataEntrega || t.data;
-    const statusNorm = normalizarStatus(t.status, dataStr);
+    const statusNorm = normalizarStatus(t.status, dataStr, t.hora_vencimento);
+    const vencida = estaVencida(dataStr, t.hora_vencimento);
+    const statusTitle = vencida ? 'Prazo encerrado: status bloqueado' : 'Clique para alterar o status';
+    const statusCursor = vencida ? 'not-allowed' : 'pointer';
     const titulo = t.titulo || t.nome || 'Sem título';
 
     const card = document.createElement('div');
@@ -73,7 +76,7 @@ function renderizarCard(t, onAlterarStatus) {
                 </p>
                 <h6 class="task-title" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${titulo}">${titulo}</h6>
             </div>
-            <div class="status-badge flex-shrink-0 ${statusBadgeClass(statusNorm)}" style="cursor:pointer;" title="Clique para alterar o status">
+            <div class="status-badge flex-shrink-0 ${statusBadgeClass(statusNorm)}" style="cursor:${statusCursor};" title="${statusTitle}">
                 ${getStatusIcon(statusNorm)}
                 <span>${statusTexto(statusNorm)}</span>
             </div>
@@ -81,6 +84,7 @@ function renderizarCard(t, onAlterarStatus) {
 
     card.querySelector('.status-badge').addEventListener('click', (e) => {
         e.stopPropagation();
+        if (vencida) return;
         onAlterarStatus(t);
     });
 

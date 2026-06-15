@@ -1,4 +1,24 @@
-function normalizarStatus(status, data_vencimento) {
+function montarDataHoraVencimento(data_vencimento, hora_vencimento) {
+    if (!data_vencimento) return null;
+
+    const dataTexto = String(data_vencimento).slice(0, 10);
+    const partesData = dataTexto.split('-').map(Number);
+    if (partesData.length !== 3 || partesData.some(Number.isNaN)) return null;
+
+    const [ano, mes, dia] = partesData;
+    const horaTexto = hora_vencimento || '23:59:59';
+    const [hora = 23, minuto = 59, segundo = 59] = String(horaTexto).split(':').map(Number);
+    const vencimento = new Date(ano, mes - 1, dia, hora || 0, minuto || 0, segundo || 0);
+
+    return Number.isNaN(vencimento.getTime()) ? null : vencimento;
+}
+
+function estaVencida(data_vencimento, hora_vencimento) {
+    const vencimento = montarDataHoraVencimento(data_vencimento, hora_vencimento);
+    return vencimento ? vencimento < new Date() : false;
+}
+
+function normalizarStatus(status, data_vencimento, hora_vencimento) {
     const s = String(status || 'pendente').toLowerCase().trim();
     let statusNorm = 'pendente';
 
@@ -8,14 +28,8 @@ function normalizarStatus(status, data_vencimento) {
         statusNorm = 'nao-feita';
     }
 
-    if (statusNorm === 'pendente' && data_vencimento) {
-        const dataTarefa = new Date(data_vencimento);
-        if (!Number.isNaN(dataTarefa.getTime())) {
-            const hoje = new Date();
-            dataTarefa.setHours(0, 0, 0, 0);
-            hoje.setHours(0, 0, 0, 0);
-            if (dataTarefa < hoje) statusNorm = 'nao-feita';
-        }
+    if (statusNorm === 'pendente' && estaVencida(data_vencimento, hora_vencimento)) {
+        statusNorm = 'nao-feita';
     }
 
     return statusNorm;

@@ -8,6 +8,7 @@ const usuarioRoutes = require('./routes/usuarioRoutes');
 const tarefaRoutes = require('./routes/tarefaRoutes')
 const materiaRoutes = require('./routes/materiaRoutes');
 const errorHandler = require('./middlewares/errorHandler');
+const env = require('./config/env');
 const app = express();
 
 app.use(cors());
@@ -34,7 +35,7 @@ app.get('/api/health', (req, res) => {
 
 app.use(errorHandler);
 
-const PORT = 3000; 
+const PORT = env.port; 
 app.listen(PORT, () => {
     console.log(`🚀 Servidor de testes rodando na porta ${PORT}`);
     //console.log(`🔗 Health Check: http://localhost:${PORT}/api/health`);

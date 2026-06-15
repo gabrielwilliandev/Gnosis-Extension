@@ -63,6 +63,7 @@ class UsuarioRepository {
 
             return {
                 token: authData.session.access_token,
+                refreshToken: authData.session.refresh_token,
                 usuario: {
                     id: authData.user.id,
                     nome: profileData ? profileData.nome : 'Estudante',
@@ -76,6 +77,34 @@ class UsuarioRepository {
 
             console.error('Erro detalhado do Supabase Auth:', error.message || error);
             throw new AppError('Credenciais invalidas', 401, 'AUTH_INVALID_CREDENTIALS');
+        }
+    }
+
+    static async refreshSession(refreshToken) {
+        try {
+            const { data, error } = await supabase.auth.refreshSession({
+                refresh_token: refreshToken
+            });
+
+            if (error || !data.session) {
+                throw new AppError('Sessao expirada. Faca login novamente.', 401, 'AUTH_REFRESH_FAILED');
+            }
+
+            return {
+                token: data.session.access_token,
+                refreshToken: data.session.refresh_token,
+                usuario: data.user ? {
+                    id: data.user.id,
+                    email: data.user.email
+                } : null
+            };
+        } catch (error) {
+            if (error instanceof AppError) {
+                throw error;
+            }
+
+            console.error('Erro ao renovar sessao:', error.message || error);
+            throw new AppError('Sessao expirada. Faca login novamente.', 401, 'AUTH_REFRESH_FAILED');
         }
     }
 }
