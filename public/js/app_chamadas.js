@@ -30,6 +30,77 @@ function carregarDependencias() {
 carregarDependencias();
 
 const API_BASE_URL = 'https://gnosis-api.whitesmoke-57ad5be1.eastus.azurecontainerapps.io/api';
+let redirecionandoPorSessaoExpirada = false;
+
+function exibirAvisoSessaoExpirada(mensagem) {
+    let aviso = document.getElementById('aviso-sessao-expirada');
+    if (!aviso) {
+        aviso = document.createElement('div');
+        aviso.id = 'aviso-sessao-expirada';
+        aviso.setAttribute('role', 'alert');
+        aviso.style.position = 'fixed';
+        aviso.style.top = '20px';
+        aviso.style.left = '50%';
+        aviso.style.transform = 'translateX(-50%)';
+        aviso.style.zIndex = '9999';
+        aviso.style.maxWidth = '420px';
+        aviso.style.width = 'calc(100% - 32px)';
+        aviso.style.padding = '14px 18px';
+        aviso.style.borderRadius = '8px';
+        aviso.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.18)';
+        aviso.style.background = '#2f3542';
+        aviso.style.color = '#fff';
+        aviso.style.fontWeight = '600';
+        aviso.style.textAlign = 'center';
+        document.body.appendChild(aviso);
+    }
+
+    aviso.textContent = mensagem;
+}
+
+async function redirecionarParaLoginPorSessaoExpirada(mensagem = 'Sua sessao expirou. Faca login novamente.') {
+    if (redirecionandoPorSessaoExpirada) return;
+    redirecionandoPorSessaoExpirada = true;
+
+    exibirAvisoSessaoExpirada(mensagem);
+    document.cookie = 'gnosis_user=; Max-Age=0; path=/';
+
+    try {
+        await window.fetch(`${API_BASE_URL}/logout`, {
+            method: 'POST',
+            credentials: 'include'
+        });
+    } catch {}
+
+    setTimeout(() => {
+        window.location.href = '/';
+    }, 2500);
+}
+
+function monitorarSessaoExpirada() {
+    const fetchOriginal = window.fetch.bind(window);
+
+    window.fetch = async (input, init) => {
+        const response = await fetchOriginal(input, init);
+        const url = typeof input === 'string' ? input : input?.url || '';
+        const chamadaApi = url.startsWith(API_BASE_URL) || url.startsWith('/api');
+        const rotaAutenticacao = url.includes('/login') || url.includes('/logout');
+
+        if (response.status === 401 && chamadaApi && !rotaAutenticacao) {
+            let mensagem = 'Sua sessao expirou. Faca login novamente.';
+            try {
+                const payload = await response.clone().json();
+                mensagem = payload.message || mensagem;
+            } catch {}
+
+            redirecionarParaLoginPorSessaoExpirada(mensagem);
+        }
+
+        return response;
+    };
+}
+
+monitorarSessaoExpirada();
 
 // --- INICIALIZAÇÃO DO SISTEMA ---
 document.addEventListener('DOMContentLoaded', () => {

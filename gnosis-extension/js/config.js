@@ -4,7 +4,7 @@ const API_URLS = {
 };
 
 // Ambiente local:
-const API_BASE_URL = API_URLS.local;
+// const API_BASE_URL = API_URLS.local;
 
 // Ambiente Azure/producao:
-// const API_BASE_URL = API_URLS.azure;
+const API_BASE_URL = API_URLS.azure;
