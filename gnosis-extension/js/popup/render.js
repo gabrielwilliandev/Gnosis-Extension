@@ -9,13 +9,18 @@ function extrairNomesMaterias(valor) {
     const nomesDiretos = [
         valor.nome,
         valor.nome_materia,
-        valor.materia_nome
+        valor.materia_nome,
+        valor.nomeMateria,
+        valor.nome_disciplina,
+        valor.disciplina
     ].filter(Boolean);
 
     return [
         ...nomesDiretos,
         ...extrairNomesMaterias(valor.materia),
-        ...extrairNomesMaterias(valor.materias)
+        ...extrairNomesMaterias(valor.materias),
+        ...extrairNomesMaterias(valor.subject),
+        ...extrairNomesMaterias(valor.subjects)
     ];
 }
 

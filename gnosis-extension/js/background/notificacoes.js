@@ -115,7 +115,13 @@ function obterDisciplinaNotificacao(tarefa) {
     if (!Array.isArray(arr) || arr.length === 0) return 'GNOSIS ORACLE';
     return arr.map((m) => {
         if (Array.isArray(m)) m = m[0];
-        return m?.nome || m?.materia?.nome || m?.materias?.nome || m?.nome_materia;
+        return m?.nome
+            || m?.materia?.nome
+            || m?.materias?.nome
+            || m?.nome_materia
+            || m?.materia_nome
+            || m?.nomeMateria
+            || m?.disciplina;
     }).filter(Boolean).join(', ').toUpperCase() || 'GNOSIS ORACLE';
 }
 
