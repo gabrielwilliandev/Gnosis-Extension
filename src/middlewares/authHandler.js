@@ -20,17 +20,25 @@ function getKey(header, callback) {
     });
 }
 
-module.exports = (req, res, next) => {
-    // Tenta buscar o token no cookie (Web App)
+function autenticar(req, res, next, options = {}) {
+    const { redirectToLogin = false } = options;
+
+    function falharAutenticacao(status, payload) {
+        if (redirectToLogin) {
+            return res.redirect('/');
+        }
+
+        return res.status(status).json(payload);
+    }
+
     let token = req.cookies?.gnosis_token;
 
-    // Se não tiver cookie, tenta pelo header (Extensão do Chrome)
     if (!token && req.headers.authorization?.startsWith('Bearer ')) {
         token = req.headers.authorization.replace('Bearer ', '').trim();
     }
 
     if (!token) {
-        return res.status(401).json({ message: 'Token ausente ou expirado' });
+        return falharAutenticacao(401, { message: 'Token ausente ou expirado' });
     }
 
     jwt.verify(token, getKey, {
@@ -41,8 +49,8 @@ module.exports = (req, res, next) => {
         if (err) {
             console.error('[JWT ERROR]', err.message);
 
-            return res.status(401).json({
-                message: 'Token inválido',
+            return falharAutenticacao(401, {
+                message: 'Token invalido',
                 error: err.message
             });
         }
@@ -50,4 +58,14 @@ module.exports = (req, res, next) => {
         req.usuario = decoded;
         next();
     });
+}
+
+function authHandler(req, res, next) {
+    return autenticar(req, res, next);
+}
+
+authHandler.protegerPagina = (req, res, next) => {
+    return autenticar(req, res, next, { redirectToLogin: true });
 };
+
+module.exports = authHandler;

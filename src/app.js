@@ -7,6 +7,7 @@ const cookieParser = require('cookie-parser');
 const usuarioRoutes = require('./routes/usuarioRoutes');
 const tarefaRoutes = require('./routes/tarefaRoutes')
 const materiaRoutes = require('./routes/materiaRoutes');
+const authHandler = require('./middlewares/authHandler');
 const errorHandler = require('./middlewares/errorHandler');
 const env = require('./config/env');
 const app = express();
@@ -65,7 +66,7 @@ app.get('/', (req, res) => {
     res.render('index', { title: 'Login' });
 });
 
-app.get('/home', (req, res) => {
+app.get('/home', authHandler.protegerPagina, (req, res) => {
     res.render('home');
 });
 
