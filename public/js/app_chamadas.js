@@ -1,34 +1,3 @@
-// Função para carregar os recursos (SEM DUPLICATA)
-function carregarDependencias() {
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css';
-    document.head.appendChild(link);
-
-    const linkcss = document.createElement('link');
-    linkcss.rel = 'stylesheet';
-    linkcss.href = './css/default.css';
-    document.head.appendChild(linkcss);
-
-    const linkIcons = document.createElement('link');
-    linkIcons.rel = 'stylesheet';
-    linkIcons.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css';
-    document.head.appendChild(linkIcons);
-
-    const favicon = document.createElement('link');
-    favicon.rel = 'icon';
-    favicon.type = 'image/png';
-    favicon.href = './img/logo_gnosis.png';
-    document.head.appendChild(favicon);    
-
-    const jquery = document.createElement('link');
-    jquery.rel = "stylesheet";
-    jquery.href = "https://cdn.jsdelivr.net/npm/jquery-confirm@3.3.4/css/jquery-confirm.min.css";
-    document.head.appendChild(jquery);
-}
-
-carregarDependencias();
-
 const API_BASE_URL = 'https://gnosis-api.whitesmoke-57ad5be1.eastus.azurecontainerapps.io/api';
 let redirecionandoPorSessaoExpirada = false;
 
