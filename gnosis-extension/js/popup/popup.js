@@ -33,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const token = await getToken();
 
         if (token && usuario && usuario.id) {
+            chrome.runtime.sendMessage({ acao: 'INICIAR_MONITORAMENTO' });
             mostrarTelaTarefas(usuario);
             buscarTarefas(usuario.id);
         } else {
