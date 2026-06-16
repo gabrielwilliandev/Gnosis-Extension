@@ -390,17 +390,7 @@ Notas:
 - Os arquivos estaticos sao servidos a partir de `public`.
 - As views ficam em `src/views`.
 - O CSS principal do web app e carregado diretamente no `<head>` das views.
-- Algumas mensagens e comentarios ainda precisam de revisao de encoding para UTF-8.
 - O projeto ainda nao possui cobertura automatizada de testes.
-
-## Proximos passos recomendados
-
-- Adicionar testes automatizados para autenticacao, materias e tarefas.
-- Padronizar encoding dos arquivos para UTF-8.
-- Documentar o modelo de dados do Supabase.
-- Criar exemplos completos de respostas da API.
-- Adicionar pipeline de validacao antes do deploy.
-- Criar processo de empacotamento da extensao.
 
 ## Equipe
 
