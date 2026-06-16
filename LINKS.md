@@ -37,7 +37,9 @@ O workflow de producao publica a imagem no ACR e atualiza o Azure Container App.
 - `AZURE_CONTAINER_APP_NAME`
 - `AZURE_RESOURCE_GROUP`
 
-`AZURE_CREDENTIALS` deve ser o JSON de login de um service principal com permissao para atualizar o Container App. O workflow aceita tanto o formato `clientId/clientSecret/tenantId` quanto o formato `appId/password/tenant`, desde que `subscriptionId` tambem esteja presente.
+`AZURE_CREDENTIALS` e opcional. Quando configurado, deve ser o JSON de login de um service principal com permissao para atualizar o Container App. O workflow aceita tanto o formato `clientId/clientSecret/tenantId` quanto o formato `appId/password/tenant`, desde que `subscriptionId` tambem esteja presente.
+
+Em contas Azure for Students, caso nao haja acesso ao tenant ou a criacao de service principal, o workflow apenas publica a imagem no ACR e pula a atualizacao automatica do Container App.
 
 ## Azure
 
