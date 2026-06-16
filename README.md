@@ -353,6 +353,8 @@ Secrets esperados no GitHub:
 - `AZURE_CONTAINER_APP_NAME`
 - `AZURE_RESOURCE_GROUP`
 
+O secret `AZURE_CREDENTIALS` deve conter o JSON do service principal. O workflow normaliza os formatos `clientId/clientSecret/tenantId` e `appId/password/tenant`, mas `subscriptionId` tambem precisa estar presente.
+
 Ambiente publicado:
 
 ```text
