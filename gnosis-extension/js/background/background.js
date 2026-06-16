@@ -1,7 +1,7 @@
 importScripts('../config.js', 'notificacoes.js');
 
 const ALARM_NAME = 'checkGnosisTasks';
-const ALARM_PERIOD_MINUTES = 30;
+const ALARM_PERIOD_MINUTES = 1;
 
 async function iniciarMonitoramento() {
     const { userId, token, refreshToken } = await getSessao();
