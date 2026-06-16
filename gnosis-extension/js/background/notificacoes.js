@@ -6,6 +6,7 @@ const GATILHOS = [
     { horas: 168, chave: '1w',  mensagem: 'Falta 1 semana!' },
 ];
 const TOLERANCIA_GATILHO_HORAS = 2 / 60;
+let checagemTarefasPromise = null;
 
 async function getSessao() {
     const [cookieUser, cookieToken, cookieRefreshToken] = await Promise.all([
@@ -126,11 +127,11 @@ function obterDisciplinaNotificacao(tarefa) {
     }).filter(Boolean).join(', ').toUpperCase() || 'GNOSIS ORACLE';
 }
 
-function dispararNotificacao(tarefa, mensagemPrazo) {
+function dispararNotificacao(tarefa, mensagemPrazo, chaveNotificacao) {
     const dataRef = tarefa.data_vencimento || tarefa.data_entrega;
     const prazoFormatado = dataRef ? new Date(dataRef).toLocaleDateString('pt-BR') : 'Sem prazo definido';
 
-    chrome.notifications.create({
+    chrome.notifications.create(chaveNotificacao, {
         type: 'basic',
         iconUrl: chrome.runtime.getURL('icons/icon-128.png'),
         title: obterDisciplinaNotificacao(tarefa),
@@ -144,7 +145,7 @@ function dispararNotificacao(tarefa, mensagemPrazo) {
     });
 }
 
-async function checarTarefasPendentes() {
+async function executarChecagemTarefasPendentes() {
     try {
         const { userId, token, refreshToken } = await getSessao();
         if (!userId || (!token && !refreshToken)) {
@@ -162,22 +163,23 @@ async function checarTarefasPendentes() {
 
         const novasNotificadas = [...notificadas];
 
-        pendentes.forEach((tarefa) => {
+        for (const tarefa of pendentes) {
             const vencimento = montarDataHoraVencimento(tarefa);
-            if (!vencimento) return;
+            if (!vencimento) continue;
 
             const horasRestantes = (vencimento - agora) / (60 * 60 * 1000);
-            if (horasRestantes <= 0) return;
+            if (horasRestantes <= 0) continue;
 
             const gatilho = resolverGatilho(horasRestantes);
-            if (!gatilho) return;
+            if (!gatilho) continue;
 
             const chave = `${tarefa.id}-${gatilho.chave}`;
             if (!novasNotificadas.includes(chave)) {
-                dispararNotificacao(tarefa, gatilho.mensagem);
                 novasNotificadas.push(chave);
+                await chrome.storage.local.set({ tarefas_notificadas: novasNotificadas });
+                dispararNotificacao(tarefa, gatilho.mensagem, chave);
             }
-        });
+        }
 
         await chrome.storage.local.set({ tarefas_notificadas: novasNotificadas });
     } catch (error) {
@@ -186,4 +188,17 @@ async function checarTarefasPendentes() {
             await limparSessaoBackground();
         }
     }
+}
+
+async function checarTarefasPendentes() {
+    if (checagemTarefasPromise) {
+        return checagemTarefasPromise;
+    }
+
+    checagemTarefasPromise = executarChecagemTarefasPendentes()
+        .finally(() => {
+            checagemTarefasPromise = null;
+        });
+
+    return checagemTarefasPromise;
 }
