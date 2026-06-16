@@ -5,6 +5,7 @@ const GATILHOS = [
     { horas: 72,  chave: '3d',  mensagem: 'Faltam 3 dias!' },
     { horas: 168, chave: '1w',  mensagem: 'Falta 1 semana!' },
 ];
+const TOLERANCIA_GATILHO_HORAS = 2 / 60;
 
 async function getSessao() {
     const [cookieUser, cookieToken, cookieRefreshToken] = await Promise.all([
@@ -91,7 +92,7 @@ async function buscarPendentes(userId, token, refreshToken, retry = true) {
 }
 
 function resolverGatilho(horasRestantes) {
-    return GATILHOS.find(g => horasRestantes <= g.horas) || null;
+    return GATILHOS.find(g => horasRestantes <= g.horas + TOLERANCIA_GATILHO_HORAS) || null;
 }
 
 function montarDataHoraVencimento(tarefa) {
