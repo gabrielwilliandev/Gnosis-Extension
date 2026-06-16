@@ -41,17 +41,72 @@ jobs:
             ${{ steps.image.outputs.sha_tag }}
             ${{ steps.image.outputs.latest_tag }}
 
+      - name: Preparar credenciais do Azure
+        id: azure-creds
+        env:
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+
+          let raw = process.env.AZURE_CREDENTIALS || '';
+          if (!raw.trim()) {
+            console.log('::notice::AZURE_CREDENTIALS nao configurado. A imagem sera publicada no ACR, mas o Container App nao sera atualizado automaticamente.');
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, 'has_creds=false\n');
+            process.exit(0);
+          }
+
+          let credentials;
+          try {
+            credentials = JSON.parse(raw);
+          } catch (error) {
+            console.log('::notice::AZURE_CREDENTIALS nao e um JSON valido. A imagem sera publicada no ACR, mas o Container App nao sera atualizado automaticamente.');
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, 'has_creds=false\n');
+            process.exit(0);
+          }
+
+          const normalized = {
+            clientId: credentials.clientId || credentials.appId,
+            clientSecret: credentials.clientSecret || credentials.password,
+            subscriptionId: credentials.subscriptionId,
+            tenantId: credentials.tenantId || credentials.tenant
+          };
+
+          const missing = Object.entries(normalized)
+            .filter(([, value]) => !value)
+            .map(([key]) => key);
+
+          if (missing.length) {
+            console.log(`::notice::AZURE_CREDENTIALS incompleto (${missing.join(', ')}). A imagem sera publicada no ACR, mas o Container App nao sera atualizado automaticamente.`);
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, 'has_creds=false\n');
+            process.exit(0);
+          }
+
+          const output = JSON.stringify(normalized);
+          console.log(`::add-mask::${output}`);
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, 'has_creds=true\n');
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `creds<<EOF\n${output}\nEOF\n`);
+          NODE
+
       - name: Login no Azure
+        if: steps.azure-creds.outputs.has_creds == 'true'
         uses: azure/login@v2
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          creds: ${{ steps.azure-creds.outputs.creds }}
 
       - name: Atualizar Container App
+        if: steps.azure-creds.outputs.has_creds == 'true'
         run: |
           az containerapp update \
             --name "${{ secrets.AZURE_CONTAINER_APP_NAME }}" \
             --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
             --image "${{ steps.image.outputs.sha_tag }}"
+
+      - name: Aviso de atualizacao manual
+        if: steps.azure-creds.outputs.has_creds != 'true'
+        run: |
+          echo "::notice::Imagem publicada no ACR, mas o Container App nao foi atualizado por falta de credenciais Azure completas."
+          echo "::notice::Imagem publicada: ${{ steps.image.outputs.sha_tag }}"
 
       - name: Resumo da imagem publicada
         run: |

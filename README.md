@@ -353,6 +353,10 @@ Secrets esperados no GitHub:
 - `AZURE_CONTAINER_APP_NAME`
 - `AZURE_RESOURCE_GROUP`
 
+O secret `AZURE_CREDENTIALS` e opcional. Quando configurado, deve conter o JSON do service principal. O workflow normaliza os formatos `clientId/clientSecret/tenantId` e `appId/password/tenant`, mas `subscriptionId` tambem precisa estar presente.
+
+Em contas Azure for Students sem acesso ao tenant ou sem permissao para criar service principal, o workflow continua publicando a imagem no ACR e pula apenas a atualizacao automatica do Container App. Nesse caso, a aplicacao deve ser atualizada manualmente no Azure Portal usando a imagem informada no resumo do workflow.
+
 Ambiente publicado:
 
 ```text
