@@ -230,3 +230,16 @@ async function checarTarefasPendentes() {
 
     return checagemTarefasPromise;
 }
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        GATILHOS,
+        TOLERANCIA_GATILHO_HORAS,
+        resolverGatilho,
+        obterChavesCompatibilidadeNotificacao,
+        jaFoiNotificada,
+        registrarComoNotificada,
+        montarDataHoraVencimento,
+        obterDisciplinaNotificacao
+    };
+}
