@@ -98,6 +98,25 @@ function resolverGatilho(horasRestantes) {
     return GATILHOS.find(g => horasRestantes <= g.horas + TOLERANCIA_GATILHO_HORAS) || null;
 }
 
+function obterChavesCompatibilidadeNotificacao(tarefa) {
+    const id = String(tarefa.id);
+    return [
+        id,
+        ...GATILHOS.map(gatilho => `${id}-${gatilho.chave}`)
+    ];
+}
+
+function jaFoiNotificada(chavesNotificacao, notificadas) {
+    return chavesNotificacao.some(chave => notificadas.has(chave));
+}
+
+function registrarComoNotificada(chavesNotificacao, notificadas) {
+    chavesNotificacao.forEach(chave => {
+        notificadas.add(chave);
+        notificacoesEmitidasNaSessao.add(chave);
+    });
+}
+
 function montarDataHoraVencimento(tarefa) {
     const dataRef = tarefa.data_vencimento || tarefa.data_entrega;
     if (!dataRef) return null;
@@ -179,11 +198,14 @@ async function executarChecagemTarefasPendentes() {
             if (!gatilho) continue;
 
             const chave = String(tarefa.id);
-            if (!novasNotificadas.has(chave)) {
-                novasNotificadas.add(chave);
-                notificacoesEmitidasNaSessao.add(chave);
+            const chavesNotificacao = obterChavesCompatibilidadeNotificacao(tarefa);
+            if (!jaFoiNotificada(chavesNotificacao, novasNotificadas)) {
+                registrarComoNotificada(chavesNotificacao, novasNotificadas);
                 await chrome.storage.local.set({ tarefas_notificadas: Array.from(novasNotificadas) });
                 dispararNotificacao(tarefa, gatilho.mensagem, chave);
+            } else if (!novasNotificadas.has(chave)) {
+                registrarComoNotificada(chavesNotificacao, novasNotificadas);
+                await chrome.storage.local.set({ tarefas_notificadas: Array.from(novasNotificadas) });
             }
         }
 
