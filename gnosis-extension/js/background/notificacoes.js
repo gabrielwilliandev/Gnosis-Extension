@@ -7,6 +7,7 @@ const GATILHOS = [
 ];
 const TOLERANCIA_GATILHO_HORAS = 2 / 60;
 let checagemTarefasPromise = null;
+const notificacoesEmitidasNaSessao = new Set();
 
 async function getSessao() {
     const [cookieUser, cookieToken, cookieRefreshToken] = await Promise.all([
@@ -54,6 +55,7 @@ async function limparSessaoBackground() {
     await chrome.cookies.remove({ url: API_BASE_URL, name: 'gnosis_refresh_token' });
     await chrome.cookies.remove({ url: API_BASE_URL, name: 'gnosis_user' });
     await chrome.storage.local.remove(['tarefas_notificadas']);
+    notificacoesEmitidasNaSessao.clear();
     chrome.alarms.clear('checkGnosisTasks');
 }
 
@@ -161,7 +163,10 @@ async function executarChecagemTarefasPendentes() {
         const tarefas = await buscarPendentes(userId, tokenAtual, refreshToken);
         const pendentes = tarefas.filter(t => !STATUS_CONCLUIDO.includes(String(t.status || '').toLowerCase()));
 
-        const novasNotificadas = [...notificadas];
+        const novasNotificadas = new Set([
+            ...notificadas,
+            ...notificacoesEmitidasNaSessao
+        ]);
 
         for (const tarefa of pendentes) {
             const vencimento = montarDataHoraVencimento(tarefa);
@@ -173,15 +178,16 @@ async function executarChecagemTarefasPendentes() {
             const gatilho = resolverGatilho(horasRestantes);
             if (!gatilho) continue;
 
-            const chave = `${tarefa.id}-${gatilho.chave}`;
-            if (!novasNotificadas.includes(chave)) {
-                novasNotificadas.push(chave);
-                await chrome.storage.local.set({ tarefas_notificadas: novasNotificadas });
+            const chave = String(tarefa.id);
+            if (!novasNotificadas.has(chave)) {
+                novasNotificadas.add(chave);
+                notificacoesEmitidasNaSessao.add(chave);
+                await chrome.storage.local.set({ tarefas_notificadas: Array.from(novasNotificadas) });
                 dispararNotificacao(tarefa, gatilho.mensagem, chave);
             }
         }
 
-        await chrome.storage.local.set({ tarefas_notificadas: novasNotificadas });
+        await chrome.storage.local.set({ tarefas_notificadas: Array.from(novasNotificadas) });
     } catch (error) {
         console.error('[Gnosis Oracle] Erro no Service Worker:', error);
         if (/refresh|sessao|token/i.test(error.message || '')) {
