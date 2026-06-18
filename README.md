@@ -1,5 +1,5 @@
 # Gnosis
-
+LINK DO SISTEMA WEB: https://gnosis-api.whitesmoke-57ad5be1.eastus.azurecontainerapps.io/home
 Gnosis e uma aplicacao para gestao de estudos, disciplinas, tarefas e notificacoes. O projeto combina uma API Node.js com Express, uma interface web renderizada com Mustache e uma extensao de navegador baseada em Chrome Extension Manifest V3.
 
 A plataforma permite cadastrar usuarios, autenticar sessoes, organizar materias, acompanhar tarefas em calendario e receber notificacoes de atividades pendentes.
